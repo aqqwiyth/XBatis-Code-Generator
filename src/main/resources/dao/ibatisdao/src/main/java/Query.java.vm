@@ -1,0 +1,166 @@
+##Query代码生成模版
+##使用到的变量有：
+##$!{gb.packageName}包名，如：net.letuu.order
+##$!{gb.userName}机器登录用户名，如：microboss
+##$!{gb.nowDate}当前日期，如：2011-10-14
+##$!{tbb.className}类名，如：AgentAppForm
+##$!{tbb.colList}表字段列表
+##$!{cb.propertyName}字段属性名，如：fullName
+##$!{cb.methodName}字段方法名，如：FullName
+##$!{cb.propertyType}字段属性类型名，如：String
+##$!{cb.colComment}字段注释，如：姓名全称
+##$!{cb.colName}字段列名，如：full_name
+#set($conf=$!{tbb.conf})
+package $!{gb.packageName}.query;
+
+import java.util.*
+
+/**
+ *
+ * @author $!{gb.userName}
+ */
+public class $!{tbb.className}Query extends BaseQuery {
+
+	/** ====================查询唯一单条记录使用==========================**/
+
+	/**==============================批量查询、更新、删除时的Where条件设置==================================**/
+#if($conf.queryCol.size()>0)
+	#foreach($col in $conf.queryCol)
+	#if($tbb.colMap.get($col))
+	#set($cb = $tbb.colMap.get($col))
+	#if($!{cb.propertyType}=="String"||$!{cb.propertyType}=="Long"||$!{cb.propertyType}=="Integer")
+	/** $!{cb.colComment} **/
+    private $!{cb.propertyType} $!{cb.propertyName};
+	/**
+    * 获取属性:$!{cb.propertyName}
+    * @return $!{cb.propertyName} $!{cb.colComment}
+    */
+	public $!{cb.propertyType} get$!{cb.methodName} () {
+    	return $!{cb.propertyName};
+   	}
+   	/**
+     * 设置属性:$!{cb.propertyName}
+     * @param $!{cb.propertyName} $!{cb.colComment}
+     */
+    public $!{tbb.className}Query set$!{cb.methodName}($!{cb.propertyType} $!{cb.propertyName}) {
+    	this.$!{cb.propertyName} = $!{cb.propertyName};
+    	return this;
+    }
+#end
+	#end
+	#end
+#else	
+#foreach($cb in $tbb.colList)
+#if($!{cb.propertyType}=="String"||$!{cb.propertyType}=="Long"||$!{cb.propertyType}=="Integer")
+	/** $!{cb.colComment} **/
+    private $!{cb.propertyType} $!{cb.propertyName};
+	/**
+    * 获取属性:$!{cb.propertyName}
+    * $!{cb.colComment}
+    * @return $!{cb.propertyName}
+    */
+	public $!{cb.propertyType} get$!{cb.methodName} () {
+    	return $!{cb.propertyName};
+   	}
+   	/**
+     * 设置属性:$!{cb.propertyName}
+     * $!{cb.colComment}
+     * @param $!{cb.propertyName}
+     */
+    public $!{tbb.className}Query set$!{cb.methodName}($!{cb.propertyType} $!{cb.propertyName}) {
+    	this.$!{cb.propertyName} = $!{cb.propertyName};
+    	return this;
+    }
+#end
+#end
+#end
+	/**==============================批量查询时的Order条件顺序设置==================================**/
+	public class OrderField{
+		public OrderField(String fieldName, String order) {
+			super();
+			this.fieldName = fieldName;
+			this.order = order;
+		}
+		private String fieldName;
+		private String order;
+		public String getFieldName() {
+			return fieldName;
+		}
+		public OrderField setFieldName(String fieldName) {
+			this.fieldName = fieldName;
+			return this;
+		}
+		public String getOrder() {
+			return order;
+		}
+		public OrderField setOrder(String order) {
+			this.order = order;
+			return this;
+		}
+	}
+
+	/**==============================批量查询时的Order条件顺序设置==================================**/
+	/**排序列表字段**/
+	private List<OrderField> orderFields = new ArrayList<OrderField>();
+#if($conf.orderCol.size()>0)
+#foreach($col in $conf.orderCol)
+	#if($tbb.colMap.get($col))
+	#set($cb = $tbb.colMap.get($col))	
+	/**
+	 * 设置排序按属性：$!{cb.colComment}
+	 * @param isAsc 是否升序，否则为降序
+	 */	
+	public $!{tbb.className}Query orderby$!{cb.methodName}(boolean isAsc){
+		orderFields.add(new OrderField("$!{cb.colName}",isAsc?"ASC":"DESC"));
+		return this;
+	}
+	#end	
+#end
+#else
+#foreach($cb in $tbb.colList)
+	/**
+	 * 设置排序按属性：$!{cb.colComment}
+	 * @param isAsc 是否升序，否则为降序
+	 */	
+	public $!{tbb.className}Query orderby$!{cb.methodName}(boolean isAsc){
+		orderFields.add(new OrderField("$!{cb.colName}",isAsc?"ASC":"DESC"));
+		return this;
+	}
+#end
+#end
+#if($conf.isCustomField())
+    private String fields;
+    /**
+     * 提供自定义字段使用
+     */
+    private static Map<String,String> fieldMap;
+
+    private static Map<String,String> getFieldSet() {
+        if (fieldMap == null){
+            fieldMap =new HashMap<String,String>();
+        #foreach($cb in $tbb.colList)
+            fieldMap.put("$!{cb.colName.trim()}", "$!{cb.propertyName.trim()}");
+        #end
+        }
+        return fieldMap;
+    }
+
+    public String getFields(){
+        return this.fields;
+    }
+    public void  setFields(String fields){
+        String[] array = fields.split(",");
+        StringBuffer buffer = new StringBuffer();
+        for (String field : array){
+            if(getFieldSet().containsKey(field)){
+                buffer.append(field).append(" as ").append(getFieldSet().get(field)).append(" ,");
+            }
+        }
+        if (buffer.length() != 0){
+            this.fields = buffer.substring(0, buffer.length() - 1);
+        }else{
+            this.fields = "";
+        }
+    }
+#end
+}

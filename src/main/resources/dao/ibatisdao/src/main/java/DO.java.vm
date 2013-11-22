@@ -1,0 +1,99 @@
+##DO代码生成模版
+##使用到的变量有：
+##$!{gb.packageName}包名，如：com.taobao.trip.agent
+##$!{gb.userName}机器登录用户名，如：yingyang
+##$!{gb.nowDate}当前日期，如：2011-10-14
+##$!{tbb.className}类名，如：AgentAppForm
+##$!{tbb.colList}表字段列表
+##$!{cb.propertyName}字段属性名，如：fullName
+##$!{cb.methodName}字段方法名，如：FullName
+##$!{cb.propertyType}字段属性类型名，如：String
+##$!{cb.colComment}字段注释，如：姓名全称
+#set($PO = $!{gb.objSuffix})
+#set($conf=$!{tbb.conf})
+#set($bigDecimal=false)
+#set($Date=false)
+package $!{gb.packageName}.pojo;
+
+import java.util.*;
+#foreach($cb in $tbb.colList)
+#if($!{cb.propertyType}=="Clob"&&!$clob)
+import java.sql.Clob;
+#set($clob=true)
+#elseif($!{cb.propertyType}=="Blob"&&!$blob)
+import java.sql.Blob;
+#set($blob=true)
+#elseif($!{cb.propertyType}=="Date"&&$!Date)
+import java.util.Date;
+#set($Date=true)
+#elseif($!{cb.propertyType}=="BigDecimal"&&!$bigDecimal)
+import java.math.BigDecimal;
+#set($bigDecimal=true)
+#end
+#end
+import java.io.Serializable;
+
+/**
+ *
+ * @author  $!{gb.userName}
+ * @date    $!{gb.nowDate}
+ */
+public class $!{tbb.className}${PO} implements Serializable{
+
+    /**
+	 *序列化ID
+	 */
+	private static final long serialVersionUID = 1L;
+
+#foreach($cb in $tbb.colList)
+	/**
+     * $!{cb.colComment}
+     */
+    private $!{cb.propertyType} $!{cb.propertyName};
+#end
+
+#foreach($cb in $tbb.colList)
+	
+   /**
+    * @return $!{cb.propertyName} $!{cb.colComment}
+    */
+    public $!{cb.propertyType} get$!{cb.methodName}() {
+       return $!{cb.propertyName};
+    }
+   /**
+    * @param $!{cb.propertyName} $!{cb.colComment}
+    */
+    public void set$!{cb.methodName}($!{cb.propertyType} $!{cb.propertyName}) {
+       this.$!{cb.propertyName} = $!{cb.propertyName};
+    }
+#end
+
+#if($conf.isUpdateObj())
+	/**
+     * 需要更新时的代码，keys 代表主键list
+     */
+	private List<Long> keys;
+		
+	public List<Long> getKeys() {
+		return keys;
+	}
+	
+	public void setIds(List<Long> keys) {
+		this.keys = keys;
+	}
+#end
+#if($conf.isSplitTable())
+    /**
+    * 分表使用
+    */
+    private String tableId;
+
+    public String getTableId() {
+        return tableId;
+    }
+
+    public void setTableId(String tableId) {
+        this.tableId = tableId;
+    }
+#end
+}

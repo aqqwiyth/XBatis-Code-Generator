@@ -1,0 +1,2 @@
+XBatis Code Generator
+通过velocity模版生成XBatis SQL代码

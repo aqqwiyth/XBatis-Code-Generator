@@ -1,0 +1,194 @@
+##DAO-sqlmap-mapping生成模版
+##使用到的变量有：
+##$!{tbb.className}类名，如：UserInfo
+##$!{tbb.objectName}对象名，如：userInfo
+##$!{tbb.tableName}表名，如：user_info
+##$!{tbb.colList}表字段列表
+##$!{tbb.pkcol}表主键字段列表
+##$!{velocityCount}循环次数
+##$!{cb.propertyName}字段属性名，如：fullName
+##$!{cb.colName}字段列名，如：full_name
+##$!{cb.propertyType}字段属性类型名，如：String
+##$!{gb.packageName}包名，如：net.letuu.order
+#set($conf=$!{tbb.conf})
+#set($PO = $!{gb.objSuffix})
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="${tbb.className}">
+    <!-- Alias Map Defined -->
+    <typeAlias alias="${tbb.className}Query" type="$!{gb.packageName}.query.${tbb.className}Query"/>
+    <typeAlias alias="${tbb.className}" type="$!{gb.packageName}.pojo.${tbb.className}${PO}"/>
+    <resultMap id="${tbb.objectName}" class="${tbb.className}">
+    #foreach($cb in $tbb.colList)
+        <result property="$!cb.propertyName" column="$!cb.colName"/>
+    #end
+    </resultMap>
+    <!-- Select SQL -->
+    <sql id="${tbb.objectName}${PO}.selector">
+        SELECT
+#if($conf.isCustomField())
+    <dynamic>
+        <isNotEmpty property="fields">
+            $fields$
+        </isNotEmpty>
+        <isEmpty property="fields">
+            #foreach($cb in $tbb.colList)$!{cb.colName}#{if}($velocityCount != $tbb.colList.size()),#{end}#end
+        </isEmpty>
+    </dynamic>
+#else
+    #foreach($cb in $tbb.colList)$!{cb.colName}#{if}($velocityCount != $tbb.colList.size()),#{end}#end
+#end
+        FROM ${tbb.tableName}
+    </sql>
+    <sql id="${tbb.objectName}${PO}List.where">
+        <dynamic prepend=" WHERE ">
+    #foreach($cb in $tbb.colList)
+        #if($cb.propertyType=="String"||$cb.propertyType=="Long"||$cb.propertyType=="Integer")
+                <isNotNull property="$!cb.propertyName" prepend=" AND ">
+                    $!{cb.colName}=#$!{cb.propertyName}#
+                </isNotNull>
+        #end
+    #end
+        </dynamic>
+    </sql>
+    ##处理排序问题，明天要解决
+    <sql id="${tbb.objectName}${PO}List.order">
+        <dynamic prepend=" ORDER BY ">
+            <isNotEmpty property="orderFields">
+                <iterate property="orderFields" conjunction="," open="" close="">
+                    #orderFields[].fieldName# #orderFields[].order#
+                </iterate>
+            </isNotEmpty>
+        </dynamic>
+    </sql>
+
+    #if($conf.isGetByKey())
+        <!-- 根据主键查询 -->
+        <select id="$!{tbb.className}.get$!{tbb.className}${PO}ByKey" resultMap="${tbb.objectName}"  parameterClass="${tbb.className}">
+            <include refid="${tbb.objectName}${PO}.selector"/>
+                WHERE
+        #foreach($pkcol in $tbb.pkcol)
+            ${pkcol.colName}=#${pkcol.propertyName}#  #if(!$foreach.last) AND #end
+        #end
+        </select>
+    #end
+
+    #if($conf.isDelByKey())
+        <!-- 根据主键删除 -->
+        <delete id="$!{tbb.className}.deleteByKey"  parameterClass="${tbb.className}">
+            DELETE FROM ${tbb.tableName}
+            WHERE
+            #foreach($pkcol in $tbb.pkcol)
+                ${pkcol.colName}=#${pkcol.propertyName}# #if(!$foreach.last) AND #end
+            #end
+        </delete>
+    #end
+
+    ##定制产生select方法。
+    #if($conf.selectMap.size()>0)
+        #foreach($sel in $conf.selectMap.keySet())
+            #if( $conf.selectMap.get($sel) && $conf.selectMap.get($sel).size()>0)
+                <select id="$!{tbb.className}.$sel" parameterClass="hashMap" resultMap="${tbb.objectName}">
+                    <include refid="${tbb.objectName}${PO}.selector"/>
+                    where #foreach($w in $conf.selectMap.get($sel))
+                        #if($!{tbb.colMap.get($w)})
+                            #if(!$foreach.first) and #end $w = #$!{tbb.colMap.get($w).colName}#
+                        #end
+                    #end
+                </select>
+            #end
+        #end
+    #end
+    #if($conf.isUpdateKey())
+        <!-- 根据主键更新 -->
+        ##假设没有数据变化则不会产生io操作
+        ##去除更新时间插入时间的字段,有数据变更，时间修改交给数据库执行
+        <update id="${tbb.className}.update${tbb.className}${PO}ByKey" parameterClass="${tbb.className}">
+            UPDATE ${tbb.tableName}
+            <dynamic prepend="SET" >
+                #foreach($cb in $tbb.colList)
+                    #if(${cb.colName}!=${conf.addField} && ${cb.colName}!=${conf.updField})
+                    <isNotNull prepend="," property="$!{cb.propertyName}">
+                        $cb.colName = #$!{cb.propertyName}#
+                    </isNotNull>
+                    #end
+                #end
+            </dynamic>
+            WHERE
+            #foreach($pkcol in $tbb.pkcol)
+                ${pkcol.colName}=#${pkcol.propertyName}#  #if(!$foreach.last) AND #end
+            #end
+        </update>
+    #end
+    ##分页代码
+    <select id="${tbb.className}.get${tbb.className}ListWithPage" parameterClass="${tbb.className}Query" resultMap="${tbb.objectName}">
+        <include refid="${tbb.objectName}${PO}.selector"/>
+        <include refid="${tbb.objectName}${PO}List.where"/>
+        <include refid="${tbb.objectName}${PO}List.order"/>
+        LIMIT #startRow#,#pageSize#
+    </select>
+    <select id="${tbb.className}.get${tbb.className}ListCount" parameterClass="${tbb.className}Query" resultClass="int">
+        SELECT count(1) FROM ${tbb.tableName}
+        <include refid="${tbb.objectName}${PO}List.where"/>
+    </select>
+    <select id="${tbb.className}.get${tbb.className}List" parameterClass="${tbb.className}Query" resultMap="${tbb.objectName}">
+        <include refid="${tbb.objectName}${PO}.selector"/>
+        <include refid="${tbb.objectName}${PO}List.where"/>
+        <include refid="${tbb.objectName}${PO}List.order"/>
+    </select>
+#if($conf.isCustomField())
+    ##自定义字段查询
+    <select id="${tbb.className}.get${tbb.className}ListWithPageFields" parameterClass="${tbb.className}Query" resultClass="${tbb.className}">
+        <include refid="${tbb.objectName}${PO}.selector"/>
+        <include refid="${tbb.objectName}${PO}List.where"/>
+        <include refid="${tbb.objectName}${PO}List.order"/>
+        LIMIT #startRow#,#pageSize#
+    </select>
+    <select id="${tbb.className}.get${tbb.className}ListFields" parameterClass="${tbb.className}Query" resultClass="${tbb.className}">
+        <include refid="${tbb.objectName}${PO}.selector"/>
+        <include refid="${tbb.objectName}${PO}List.where"/>
+        <include refid="${tbb.objectName}${PO}List.order"/>
+    </select>
+#end
+    <!--##add代码
+    <insert id="${tbb.className}.insert${tbb.className}${PO}" parameterClass="${tbb.className}">
+    INSERT INTO ${tbb.tableName}(
+    #foreach($cb in $tbb.colList)
+       $!{cb.colName} #if(!$foreach.last),#end
+    #end
+    VALUES(
+    #foreach($cb in $tbb.colList)
+        #$!{cb.propertyName}# #if(!$foreach.last),#end
+    #end
+    )
+    </insert>
+    -->
+    ##add代码
+    <insert id="${tbb.className}.insert${tbb.className}${PO}" parameterClass="${tbb.className}">
+        INSERT INTO ${tbb.tableName}
+        <dynamic prepend="(" close=")">
+            ##循环所有字段
+            #foreach($cb in $tbb.colList)
+                #if($!{cb.colName}==${conf.addField} ||$!{cb.colName}==${conf.updField})
+                    ,$!{cb.colName.trim()}
+                #else
+                    <isNotEmpty prepend="," property="$!{cb.propertyName}">
+                        $!{cb.colName.trim()}
+                    </isNotEmpty >
+                #end
+            #end
+        </dynamic>
+        VALUES
+        <dynamic prepend="(" close=")">
+            #foreach($cb in $tbb.colList)
+                #if($!{cb.colName}==${conf.addField} ||$!{cb.colName}==${conf.updField})
+                            ,now()
+                #else
+                    <isNotEmpty  prepend="," property="$!{cb.propertyName}">
+                            #$!{cb.propertyName.trim()}#
+                    </isNotEmpty >
+                #end
+            #end
+        </dynamic>
+    </insert>
+</sqlMap>

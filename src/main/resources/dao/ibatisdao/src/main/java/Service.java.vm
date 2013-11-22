@@ -1,0 +1,89 @@
+##DAO实现代码生成模版
+##使用到的变量有：
+##$!{gb.packageName}包名，如：net.letuu.order
+##$!{gb.userName}机器登录用户名，如：microboss
+##$!{gb.nowDate}当前日期，如：2013-05-02
+##$!{tbb.className}类名，如：UserInfo
+##$!{tbb.objectName}对象名，如：userInfo
+#set($conf=$!{tbb.conf})
+#set($PO = $!{gb.objSuffix})
+#set($clear = "")
+package $!{gb.packageName}.service;
+
+import java.util.List;
+#foreach($cb in $tbb.colList)
+#if($!{cb.propertyType}=="Clob"&&!$clob)
+import java.sql.Clob;
+#set($clob=true)
+#elseif($!{cb.propertyType}=="Blob"&&!$blob)
+import java.sql.Blob;
+#set($blob=true)
+#elseif($!{cb.propertyType}=="Date"&&!$d)
+import java.util.Date;
+#set($d=true)
+#elseif($!{cb.propertyType}=="BigDecimal"&&!$bigDecimal)
+import java.math.BigDecimal;
+#set($bigDecimal=true)
+#end
+#end
+
+import $!{gb.packageName}.pojo.$!{tbb.className}${PO};
+#if($conf.isNeedPage())import $!{gb.packageName}.common.Result;
+#end
+#if($conf.isNeedPage())import $!{gb.packageName}.query.$!{tbb.className}Query;
+#end
+/**
+ * @author $!{gb.userName}
+ * @since $!{gb.nowDate}
+ */
+public interface $!{tbb.className}Service{
+
+    /**
+     * 基本插入
+     * @return
+     */
+	public Integer add$!{tbb.className}${PO}($!{tbb.className}${PO} $!{tbb.objectName});
+	
+#if($conf.isGetByKey())
+    /**
+     * 根据主键查询
+     */
+	public $!{tbb.className}${PO} get$!{tbb.className}${PO}ByKey($!{tbb.className}${PO} $!{tbb.objectName});
+#end
+	
+#if($conf.isDelByKey())
+    /**
+     * 根据主键删除
+     * @return
+     */
+	public Integer deleteByKey($!{tbb.className}${PO} $!{tbb.objectName});
+#end	
+#if($conf.isUpdateKey())
+    /**
+     * 根据主键更新
+     * @return
+     */
+	public Integer update$!{tbb.className}${PO}ByKey($!{tbb.className}${PO} $!{tbb.objectName});
+#end
+#if($conf.isNeedPage())
+    /**
+     * 根据条件查询分页查询
+     * @param $!{tbb.objectName}Query 查询条件
+     * @return
+     */
+    public Result<$!{tbb.className}${PO}> get$!{tbb.className}${PO}ListWithPage($!{tbb.className}Query $!{tbb.objectName}Query);
+#end
+    /**
+     * 根据条件查询
+     * @param $!{tbb.objectName}Query 查询条件
+     * @return
+     */
+    public List<$!{tbb.className}${PO}> get$!{tbb.className}${PO}List($!{tbb.className}Query $!{tbb.objectName}Query);
+#if($conf.selectMap.size()>0)
+#foreach($sel in $conf.selectMap.keySet())
+#if( $conf.selectMap.get($sel) && $conf.selectMap.get($sel).size()>0)${clear}
+    public #if($sel.indexOf("List")>=0)List<$!{tbb.className}${PO}>#{else}$!{tbb.className}${PO}#end ${sel}(#foreach($w in $conf.selectMap.get($sel))#{if}($!{tbb.colMap.get($w)})#{if}($!{velocityCount}>1),#{end}$!{tbb.colMap.get($w).propertyType} $!{tbb.colMap.get($w).colName}#{end}#{end});
+#end
+#end
+#end
+}

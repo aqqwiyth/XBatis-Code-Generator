@@ -1,0 +1,47 @@
+##BaseQuery代码生成模版
+##使用到的变量有：
+##$!{gb.packageName}包名，如：net.letuu.order
+##$!{gb.userName}机器登录用户名，如：microboss
+##$!{gb.nowDate}当前日期，如：2013-05-02
+package $!{gb.packageName}.query;
+
+/**
+ * @author $!{gb.userName}
+ */
+public class BaseQuery {
+	public final static int DEFAULT_SIZE = 10;
+	protected Integer pageSize = DEFAULT_SIZE;
+	protected Integer startRow;//起始行
+	protected Integer endRow;//结束行(闭合)
+	protected Integer page;
+	public Integer getStartRow() {
+		return startRow;
+	}
+	public BaseQuery setStartRow(Integer startRow) {
+		this.startRow = startRow;
+		return this;
+	}
+	public Integer getEndRow() {
+		return endRow;
+	}
+	public BaseQuery setEndRow(Integer endRow) {
+		this.endRow = endRow;
+		return this;
+	}
+	public BaseQuery setPage(Integer page) {
+		this.page = page;
+		this.startRow = (page-1)*this.pageSize;
+		this.endRow= this.startRow + this.pageSize - 1;
+		return this;
+	}
+	public Integer getPageSize() {
+		return pageSize;
+	}
+	public BaseQuery setPageSize(Integer pageSize) {
+		this.pageSize = pageSize;
+		return this;
+	}
+	public Integer getPage() {
+		return page;
+	}
+}

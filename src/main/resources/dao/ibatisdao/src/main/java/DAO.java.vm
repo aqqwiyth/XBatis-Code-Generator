@@ -1,0 +1,145 @@
+##DAO实现代码生成模版
+##使用到的变量有：
+##$!{gb.packageName}包名，如：net.letuu.order
+##$!{gb.userName}机器登录用户名，如：microboss
+##$!{gb.nowDate}当前日期，如：2013-05-02
+##$!{tbb.className}类名，如：UserInfo
+##$!{tbb.objectName}对象名，如：userInfo
+#set($conf=$!{tbb.conf})
+#set($PO = $!{gb.objSuffix})
+#set($clear = "")
+package $!{gb.packageName}.dao;
+
+import com.ibatis.sqlmap.client.SqlMapClient;
+import org.springframework.stereotype.Repository;
+
+import javax.annotation.Resource;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+#foreach($cb in $tbb.colList)
+#if($!{cb.propertyType}=="Clob"&&!$clob)
+import java.sql.Clob;
+#set($clob=true)
+#elseif($!{cb.propertyType}=="Blob"&&!$blob)
+import java.sql.Blob;
+#set($blob=true)
+#elseif($!{cb.propertyType}=="Date"&&!$d)
+import java.util.Date;
+#set($d=true)
+#elseif($!{cb.propertyType}=="BigDecimal"&&$!bigDecimal)
+import java.math.BigDecimal;
+#set($bigDecimal=true)
+#end
+#end
+#if($conf.isNeedPage())
+import java.util.Collections;
+
+import $!{gb.packageName}.common.Result;
+import $!{gb.packageName}.query.$!{tbb.className}Query;
+#end
+import $!{gb.packageName}.pojo.$!{tbb.className}${PO};
+
+/**
+ * @author  $!{gb.userName}
+ * @date    $!{gb.nowDate}
+ */
+
+@Repository
+public class $!{tbb.className}DAO {
+
+	@Resource
+	SqlMapClient sqlMapClientTemplate;
+
+	public Integer add$!{tbb.className}${PO}($!{tbb.className}${PO} $!{tbb.objectName}) throws SQLException{
+		return (Integer)this.sqlMapClientTemplate.insert("${tbb.className}.insert${tbb.className}${PO}", $!{tbb.objectName});
+	}
+
+#if($conf.isGetByKey())
+    /**
+     * 根据主键查找
+     * @throws SQLException
+     */
+	public $!{tbb.className}${PO} get$!{tbb.className}${PO}ByKey($!{tbb.className}${PO} $!{tbb.objectName}) throws SQLException {
+		$!{tbb.className}$PO result = ($!{tbb.className}$PO) this.sqlMapClientTemplate.queryForObject(
+				"$!{tbb.className}.get$!{tbb.className}${PO}ByKey", $!{tbb.objectName});
+		return result;
+	}
+#end
+#if($conf.isDelByKey())
+    /**
+     * 根据主键删除
+     * @return
+     * @throws SQLException
+     */
+	public Integer deleteByKey($!{tbb.className}${PO} $!{tbb.objectName}) throws SQLException {
+		Integer row = (Integer) this.sqlMapClientTemplate.delete("$!{tbb.className}.deleteByKey", $!{tbb.objectName});
+		return row;
+	}
+#end
+#if($conf.isUpdateKey())
+    /**
+     * 根据主键更新
+     * @return
+     * @throws SQLException
+     */
+    public Integer update$!{tbb.className}${PO}ByKey($!{tbb.className}${PO} $!{tbb.objectName}) throws SQLException{
+		return (Integer) this.sqlMapClientTemplate.update("${tbb.className}.update${tbb.className}${PO}ByKey", $!{tbb.objectName});
+	}
+#end
+    #if($conf.selectMap.size()>0)
+	#foreach($sel in $conf.selectMap.keySet())
+		#if( $conf.selectMap.get($sel) && $conf.selectMap.get($sel).size()>0)${clear}
+	public #if($sel.indexOf("List")>=0)List<$!{tbb.className}${PO}>#{else}$!{tbb.className}${PO}#end ${sel}(#foreach($w in $conf.selectMap.get($sel))#{if}($!{tbb.colMap.get($w)})#{if}($!{velocityCount}>1),#{end}$!{tbb.colMap.get($w).propertyType} $!{tbb.colMap.get($w).colName}#{end}#{end}) throws SQLException{
+		Map<String, Object> params = new HashMap<String, Object>();
+#foreach($w in $conf.selectMap.get($sel))#if($!{tbb.colMap.get($w)})
+		params.put("$!{tbb.colMap.get($w).colName}", $!{tbb.colMap.get($w).colName});
+#end
+#end
+		#if($sel.indexOf("List")>=0)List<$!{tbb.className}${PO}> result = (List<$!{tbb.className}${PO}>) this.sqlMapClientTemplate.queryForList(
+				"$!{tbb.className}.${sel}", params);
+#else$!{tbb.className}${PO} result = ($!{tbb.className}${PO}) this.sqlMapClientTemplate.queryForObject("$!{tbb.className}.${sel}", params);
+#end
+		return result;
+	}
+		#end
+	#end
+	#end
+
+#if($conf.isNeedPage())
+    @SuppressWarnings("unchecked")
+    public Result<$!{tbb.className}${PO}> get$!{tbb.className}${PO}ListWithPage($!{tbb.className}Query $!{tbb.objectName}Query){
+	    Result<$!{tbb.className}${PO}> rs = new Result<$!{tbb.className}${PO}>();
+		try{
+#if($conf.isCustomField())
+            rs.setCount((Integer) this.sqlMapClientTemplate.queryForObject("$!{tbb.className}.get$!{tbb.className}ListCount",$!{tbb.objectName}Query));
+            if($!{tbb.objectName}Query.getFields()!=null||$!{tbb.objectName}Query.getFields()!=""){
+                rs.setList((List<$!{tbb.className}${PO}>)this.sqlMapClientTemplate.queryForList("$!{tbb.className}.get$!{tbb.className}ListWithPageFields", $!{tbb.objectName}Query));
+            }else{
+                rs.setList((List<$!{tbb.className}${PO}>)this.sqlMapClientTemplate.queryForList("$!{tbb.className}.get$!{tbb.className}ListWithPage", $!{tbb.objectName}Query));
+            }
+#else
+            rs.setList((List<$!{tbb.className}${PO}>)this.sqlMapClientTemplate.queryForList("$!{tbb.className}.get$!{tbb.className}ListWithPage", $!{tbb.objectName}Query));
+#end
+		}catch(SQLException e){
+			rs.setSuccess(false);
+			rs.setCount(0);
+			rs.setList(Collections.EMPTY_LIST);
+			rs.setErrorMsg(e.toString());
+		}
+		return rs;
+	}
+#end
+
+    @SuppressWarnings("unchecked")
+    public List<$!{tbb.className}${PO}> get$!{tbb.className}${PO}List($!{tbb.className}Query $!{tbb.objectName}Query) throws SQLException{
+#if($conf.isCustomField())
+    if($!{tbb.objectName}Query.getFields()!=null||$!{tbb.objectName}Query.getFields()!=""){
+        return (List<$!{tbb.className}${PO}>)this.sqlMapClientTemplate.queryForList("$!{tbb.className}.get$!{tbb.className}ListFields", $!{tbb.objectName}Query);
+    }
+#end
+		return (List<$!{tbb.className}${PO}>)this.sqlMapClientTemplate.queryForList("$!{tbb.className}.get$!{tbb.className}List", $!{tbb.objectName}Query);
+	}
+
+}
