@@ -1,4 +1,4 @@
-package net.letuu.daogen;
+package com.raycloud.util.daogen;
 
 import java.util.List;
 
