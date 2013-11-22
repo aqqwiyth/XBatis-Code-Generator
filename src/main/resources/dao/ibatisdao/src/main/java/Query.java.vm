@@ -13,7 +13,7 @@
 #set($conf=$!{tbb.conf})
 package $!{gb.packageName}.query;
 
-import java.util.*
+import java.util.*;
 
 /**
  *
