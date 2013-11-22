@@ -139,7 +139,7 @@ public class $!{tbb.className}Query extends BaseQuery {
         if (fieldMap == null){
             fieldMap =new HashMap<String,String>();
         #foreach($cb in $tbb.colList)
-            fieldMap.put("$!{cb.colName.trim()}", "$!{cb.propertyName.trim()}");
+            fieldMap.put("$!{cb.colNameCheck}", "$!{cb.propertyName.trim()}");
         #end
         }
         return fieldMap;
@@ -154,6 +154,9 @@ public class $!{tbb.className}Query extends BaseQuery {
         for (String field : array){
             if(getFieldSet().containsKey(field)){
                 buffer.append(field).append(" as ").append(getFieldSet().get(field)).append(" ,");
+            }
+            if(getFieldSet().containsKey("`"+field+"`")){
+                buffer.append("`"+field+"`").append(" as ").append(getFieldSet().get(field)).append(" ,");
             }
         }
         if (buffer.length() != 0){

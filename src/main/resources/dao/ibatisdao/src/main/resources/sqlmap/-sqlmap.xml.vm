@@ -32,11 +32,11 @@
             $fields$
         </isNotEmpty>
         <isEmpty property="fields">
-            #foreach($cb in $tbb.colList)$!{cb.colName}#{if}($velocityCount != $tbb.colList.size()),#{end}#end
+            #foreach($cb in $tbb.colList)$!{cb.colNameCheck}#{if}($velocityCount != $tbb.colList.size()),#{end}#end
         </isEmpty>
     </dynamic>
 #else
-    #foreach($cb in $tbb.colList)$!{cb.colName}#{if}($velocityCount != $tbb.colList.size()),#{end}#end
+    #foreach($cb in $tbb.colList)$!{cb.colNameCheck}#{if}($velocityCount != $tbb.colList.size()),#{end}#end
 #end
         FROM ${tbb.tableName}
     </sql>
@@ -45,7 +45,7 @@
     #foreach($cb in $tbb.colList)
         #if($cb.propertyType=="String"||$cb.propertyType=="Long"||$cb.propertyType=="Integer")
                 <isNotNull property="$!cb.propertyName" prepend=" AND ">
-                    $!{cb.colName}=#$!{cb.propertyName}#
+                    $!{cb.colNameCheck}=#$!{cb.propertyName}#
                 </isNotNull>
         #end
     #end
@@ -66,7 +66,7 @@
         <!-- 根据主键查询 -->
         <select id="$!{tbb.className}.get$!{tbb.className}${PO}ByKey" resultMap="${tbb.objectName}"  parameterClass="${tbb.className}">
            ##POJO对象上没有Field属性所以选择selector会抛出异常,临时解决
-           SELECT #foreach($cb in $tbb.colList)$!{cb.colName}#{if}($velocityCount != $tbb.colList.size()),#{end}#end  FROM ${tbb.tableName}
+           SELECT #foreach($cb in $tbb.colList)$!{cb.colNameCheck}#{if}($velocityCount != $tbb.colList.size()),#{end}#end  FROM ${tbb.tableName}
                 WHERE
         #foreach($pkcol in $tbb.pkcol)
             ${pkcol.colName}=#${pkcol.propertyName}#  #if(!$foreach.last) AND #end
@@ -110,7 +110,7 @@
                 #foreach($cb in $tbb.colList)
                     #if(${cb.colName}!=${conf.addField} && ${cb.colName}!=${conf.updField})
                     <isNotNull prepend="," property="$!{cb.propertyName}">
-                        $cb.colName = #$!{cb.propertyName}#
+                        $cb.colNameCheck = #$!{cb.propertyName}#
                     </isNotNull>
                     #end
                 #end
@@ -155,7 +155,7 @@
     <insert id="${tbb.className}.insert${tbb.className}${PO}" parameterClass="${tbb.className}">
     INSERT INTO ${tbb.tableName}(
     #foreach($cb in $tbb.colList)
-       $!{cb.colName} #if(!$foreach.last),#end
+       $!{cb.colNameCheck} #if(!$foreach.last),#end
     #end
     VALUES(
     #foreach($cb in $tbb.colList)
@@ -174,7 +174,7 @@
                     ,$!{cb.colName.trim()}
                 #else
                     <isNotEmpty prepend="," property="$!{cb.propertyName}">
-                        $!{cb.colName.trim()}
+                        $!{cb.colNameCheck.trim()}
                     </isNotEmpty >
                 #end
             #end

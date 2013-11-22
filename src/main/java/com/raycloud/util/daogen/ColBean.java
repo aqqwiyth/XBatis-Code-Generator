@@ -2,6 +2,7 @@ package com.raycloud.util.daogen;
 
 
 import com.raycloud.util.daogen.util.CharUtil;
+import com.raycloud.util.daogen.util.Keywords;
 
 public class ColBean {
 	/**================字段结构信息======================*/
@@ -88,6 +89,11 @@ public class ColBean {
 	public String getColName() {
 		return colName;
 	}
+
+    /**增加一个检查方法**/
+    public String getColNameCheck() {
+        return Keywords.checkOrReplace(colName);
+    }
 
 	public void setColName(String colName) {
 		this.colName = colName;
