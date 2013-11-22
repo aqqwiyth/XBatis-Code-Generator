@@ -5,7 +5,6 @@ import com.raycloud.util.daogen.util.StringUtil;
 import com.raycloud.util.daogen.util.VelocityTemplate;
 import java.util.*;
 import java.util.Map.Entry;
-import net.letuu.daogen.GlobalBean;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.log4j.Logger;
