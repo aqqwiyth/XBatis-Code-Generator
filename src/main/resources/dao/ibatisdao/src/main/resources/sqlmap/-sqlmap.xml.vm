@@ -65,7 +65,8 @@
     #if($conf.isGetByKey())
         <!-- 根据主键查询 -->
         <select id="$!{tbb.className}.get$!{tbb.className}${PO}ByKey" resultMap="${tbb.objectName}"  parameterClass="${tbb.className}">
-            <include refid="${tbb.objectName}${PO}.selector"/>
+           ##POJO对象上没有Field属性所以选择selector会抛出异常,临时解决
+           SELECT #foreach($cb in $tbb.colList)$!{cb.colName}#{if}($velocityCount != $tbb.colList.size()),#{end}#end  FROM ${tbb.tableName}
                 WHERE
         #foreach($pkcol in $tbb.pkcol)
             ${pkcol.colName}=#${pkcol.propertyName}#  #if(!$foreach.last) AND #end
