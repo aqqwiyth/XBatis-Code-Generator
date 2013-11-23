@@ -3,11 +3,7 @@ package com.raycloud.util.daogen;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -33,7 +29,8 @@ public class GenTable {
 		settings = dbConn.getSettings();
 		allTableName = getTableName();
 		alltables = allTableName.toString().replaceAll("\\[", "'").replaceAll("\\]", "'").replaceAll(", ", "','");
-		allTablePK = getAllTablePK();
+//		allTablePK = getAllTablePK();
+        allTablePK = getAllTablePKBYIndex();
 	}
 	
 
@@ -183,20 +180,23 @@ public class GenTable {
 		try {
 			dbmd = conn.getDatabaseMetaData();	
 			/*获取表的主键信息，参数(catalog,schemaPattern,tableName)一定要指定表名称，否则返回将出错。
-			 *返回6列数据,如下所示*/
+			 *返回6列数据,如下所示
+			 *DatabaseMetaData.getPrimaryKeys(catalog, schema, table) 获取的结果不是根据键顺序而是根据列名的首字母排序的
+			 */
 			logger.info("============================获取所有表主键信息：");
-			for(String t:allTableName){
+            for(String t:allTableName){
 				rs = dbmd.getPrimaryKeys(null, null, t);
-                List<String> list = new ArrayList<String>();
+                Map<Integer,String> keyIndexMap = new HashMap<Integer,String>();
                 while (rs.next()) {
-                    list.add( rs.getString(4).toLowerCase());
+                    keyIndexMap.put(rs.getInt(5),rs.getString(4));
 					logger.info("Schema名【" + StringUtil.genLengthStr(rs.getString(1),10)
 							+"】表名【"+ StringUtil.genLengthStr(rs.getString(3),25)
 							+"】主键列名【"+ StringUtil.genLengthStr(rs.getString(4),10)
 							+"】主键列序号【"+ StringUtil.genLengthStr(rs.getString(5),2)
 							+"】主键名称【"+ StringUtil.genLengthStr(rs.getString(6),15)+"】");
 				}
-                map.put(t.toLowerCase(), list);
+                /**似乎没有API获取主键的顺序，这里默认主键的顺序为列的顺序**/
+                map.put(t.toLowerCase(), keySequence(keyIndexMap));
 			}
 		} catch (SQLException e) {
 			logger.error("获取所有指定表的主键信息出错", e);
@@ -204,7 +204,54 @@ public class GenTable {
 		return map;
 	}
 
-	/**
+    /**
+     * 从索引获取主键
+     * @return
+     */
+    private Map<String, List<String>> getAllTablePKBYIndex(){
+        HashMap<String, List<String>> map = new HashMap<String, List<String>>();
+        DatabaseMetaData dbmd = null;
+        ResultSet rs = null;
+        try {
+            dbmd = conn.getDatabaseMetaData();
+            logger.info("============================从索引获取主键:");
+            for(String t:allTableName){
+                rs = dbmd.getIndexInfo(null, null, t, true,false);
+                List<String> list =new ArrayList<String>();
+                while (rs.next()) {
+                    list.add(rs.getString("COLUMN_NAME"));
+                }
+                map.put(t.toLowerCase(), list);
+            }
+        } catch (SQLException e) {
+            logger.error("获取所有指定表的主键信息出错", e);
+        }
+        return map;
+    }
+
+    /**
+     * 主键列排序
+     * @param keyIndexMap <seq_index,key_name>
+     * @return
+     */
+    private List<String> keySequence(Map<Integer, String> keyIndexMap) {
+        List<Integer> index = new ArrayList<Integer>(keyIndexMap.keySet());
+        Collections.sort(index, new Comparator() {
+            @Override
+            public int compare(Object arg0, Object arg1) {
+                int muti0 = (Integer) arg0;
+                int muti1 = (Integer) arg1;
+                if (muti0 < muti1) {
+                    return 1;
+                } else {
+                    return 0;
+                }
+            }
+        });
+        return new ArrayList<String>(keyIndexMap.values());
+    }
+
+    /**
 	 * 获取所有指定表的字段
 	 * @return
 	 */
