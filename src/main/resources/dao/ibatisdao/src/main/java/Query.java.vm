@@ -21,57 +21,46 @@ import java.util.*;
  */
 public class $!{tbb.className}Query extends BaseQuery {
 
-	/** ====================查询唯一单条记录使用==========================**/
-
 	/**==============================批量查询、更新、删除时的Where条件设置==================================**/
-#if($conf.queryCol.size()>0)
-	#foreach($col in $conf.queryCol)
-	#if($tbb.colMap.get($col))
-	#set($cb = $tbb.colMap.get($col))
-	#if($!{cb.propertyType}=="String"||$!{cb.propertyType}=="Long"||$!{cb.propertyType}=="Integer")
-	/** $!{cb.colComment} **/
-    private $!{cb.propertyType} $!{cb.propertyName};
-	/**
-    * 获取属性:$!{cb.propertyName}
-    * @return $!{cb.propertyName} $!{cb.colComment}
-    */
-	public $!{cb.propertyType} get$!{cb.methodName} () {
-    	return $!{cb.propertyName};
-   	}
-   	/**
-     * 设置属性:$!{cb.propertyName}
-     * @param $!{cb.propertyName} $!{cb.colComment}
-     */
-    public $!{tbb.className}Query set$!{cb.methodName}($!{cb.propertyType} $!{cb.propertyName}) {
-    	this.$!{cb.propertyName} = $!{cb.propertyName};
-    	return this;
-    }
-#end
-	#end
-	#end
-#else	
 #foreach($cb in $tbb.colList)
-#if($!{cb.propertyType}=="String"||$!{cb.propertyType}=="Long"||$!{cb.propertyType}=="Integer")
+#if($!{cb.propertyType}!="Date")
 	/** $!{cb.colComment} **/
     private $!{cb.propertyType} $!{cb.propertyName};
-	/**
-    * 获取属性:$!{cb.propertyName}
-    * $!{cb.colComment}
-    * @return $!{cb.propertyName}
-    */
 	public $!{cb.propertyType} get$!{cb.methodName} () {
     	return $!{cb.propertyName};
    	}
-   	/**
-     * 设置属性:$!{cb.propertyName}
-     * $!{cb.colComment}
-     * @param $!{cb.propertyName}
-     */
     public $!{tbb.className}Query set$!{cb.methodName}($!{cb.propertyType} $!{cb.propertyName}) {
     	this.$!{cb.propertyName} = $!{cb.propertyName};
     	return this;
     }
-#end
+#elseif(${cb.colName}!=${conf.addField} && ${cb.colName}!=${conf.updField})
+    /** $!{cb.colComment} **/
+    private $!{cb.propertyType} $!{cb.propertyName}Start;
+    public $!{cb.propertyType} get$!{cb.methodName}Start () {
+        return $!{cb.propertyName}Start;
+    }
+    public $!{tbb.className}Query set$!{cb.methodName}Start($!{cb.propertyType} $!{cb.propertyName}) {
+        this.$!{cb.propertyName}Start = $!{cb.propertyName};
+        return this;
+    }
+
+    private $!{cb.propertyType} $!{cb.propertyName}End;
+    public $!{cb.propertyType} get$!{cb.methodName}End () {
+        return $!{cb.propertyName}End;
+    }
+    public $!{tbb.className}Query set$!{cb.methodName}End($!{cb.propertyType} $!{cb.propertyName}) {
+        this.$!{cb.propertyName}End = $!{cb.propertyName};
+        return this;
+    }
+
+    private $!{cb.propertyType} $!{cb.propertyName}Equal;
+    public $!{cb.propertyType} get$!{cb.methodName}Equal () {
+        return $!{cb.propertyName}Equal;
+    }
+    public $!{tbb.className}Query set$!{cb.methodName}Equal($!{cb.propertyType} $!{cb.propertyName}) {
+        this.$!{cb.propertyName}Equal = $!{cb.propertyName};
+        return this;
+    }
 #end
 #end
 	/**==============================批量查询时的Order条件顺序设置==================================**/
@@ -162,7 +151,7 @@ public class $!{tbb.className}Query extends BaseQuery {
         if (buffer.length() != 0){
             this.fields = buffer.substring(0, buffer.length() - 1);
         }else{
-            this.fields = "";
+            this.fields = " 1 ";//没有一个参数可能会报错
         }
     }
 #end

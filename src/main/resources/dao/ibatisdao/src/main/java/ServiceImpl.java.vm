@@ -5,6 +5,22 @@
 ##$!{gb.nowDate}当前日期，如：2013-05-02
 ##$!{tbb.className}类名，如：UserInfo
 ##$!{tbb.objectName}对象名，如：userInfo
+##宏定义,用于单一对象的删除与查找的参数
+#macro(primaryKey $tbb)
+    #foreach($pkcol in $tbb.pkcol) $!{pkcol.propertyType} $!{pkcol.propertyName}  #if(!$foreach.last), #end #end
+#end
+##宏定义,用于多对象的删除与查找的参数
+#macro( primaryKeys $tbb )
+    #foreach($pkcol in $tbb.pkcol)#if($foreach.last)List<$!{pkcol.propertyType}> $!{pkcol.propertyName}List#else$!{pkcol.propertyType} $!{pkcol.propertyName},#end#end
+#end
+##主键值
+#macro( primaryValue $tbb)
+    #foreach($pkcol in $tbb.pkcol)$!{pkcol.propertyName}  #if(!$foreach.last), #end #end
+#end
+##主键值
+#macro( primaryValues $tbb )
+    #foreach($pkcol in $tbb.pkcol)#if($foreach.last)$!{pkcol.propertyName}List#else $!{pkcol.propertyName},#end#end
+#end
 #set($conf=$!{tbb.conf})
 #set($PO = $!{gb.objSuffix})
 #set($clear = "")
@@ -72,29 +88,49 @@ public class $!{tbb.className}ServiceImpl implements $!{tbb.className}Service{
     /**
      * 根据主键查找
      */
-	public $!{tbb.className}${PO} get$!{tbb.className}${PO}ByKey($!{tbb.className}${PO} $!{tbb.objectName}){
+	public $!{tbb.className}${PO} get$!{tbb.className}${PO}ByKey(#primaryKey($tbb)){
 		try{
-			return $!{tbb.objectName}DAO.get$!{tbb.className}${PO}ByKey($!{tbb.objectName});
+			return $!{tbb.objectName}DAO.get$!{tbb.className}${PO}ByKey(#primaryValue($tbb));
 		}catch(SQLException e){
 			log.error("dao get$!{tbb.className}${PO}byKey error.:" + e.getMessage(), e);
 		}
 		return null;
 	}
 #end
+#if($conf.isGetByKeys())
+    public List<$!{tbb.className}${PO}> get$!{tbb.className}${PO}ByKeys(#primaryKeys($tbb)){
+        try{
+            return $!{tbb.objectName}DAO.get$!{tbb.className}${PO}ByKeys(#primaryValues($tbb));
+        }catch(SQLException e){
+            log.error("dao get$!{tbb.className}${PO}sByKeys erorr."+ e.getMessage(),e);
+        }
+        return null;
+    }
+#end
 #if($conf.isDelByKey())
     /**
      * 根据主键删除
      * @return
      */
-	public Integer deleteByKey($!{tbb.className}${PO} $!{tbb.objectName}){
+	public Integer deleteByKey(#primaryKey($tbb)){
 		try{
-			return $!{tbb.objectName}DAO.deleteByKey($!{tbb.objectName});
+			return $!{tbb.objectName}DAO.deleteByKey(#primaryValue($tbb));
 		}catch(SQLException e){
 		    log.error("dao deleteByKey error. :" + e.getMessage(), e);
 		}
 		return -1;
 	}
-#end	
+#end
+#if($conf.isDelByKeys())
+    public Integer deleteByKeys(#primaryKeys($tbb)){
+        try{
+            return $!{tbb.objectName}DAO.deleteByKeys(#primaryValues($tbb));
+        }catch(SQLException e){
+            log.error("dao deleteByKeys error. $!{tbb.pkcol.propertyName}s:" + e.getMessage(), e);
+        }
+        return -1;
+    }
+#end
 #if($conf.isUpdateKey())
     /**
      * 根据主键更新

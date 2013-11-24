@@ -5,6 +5,22 @@
 ##$!{gb.nowDate}当前日期，如：2013-05-02
 ##$!{tbb.className}类名，如：UserInfo
 ##$!{tbb.objectName}对象名，如：userInfo
+#macro(primaryKey $tbb)
+    #foreach($pkcol in $tbb.pkcol) $!{pkcol.propertyType} $!{pkcol.propertyName}  #if(!$foreach.last), #end #end
+##    #foreach($pkcol in $tbb.pkcol)
+##        $!{pkcol.propertyType} $!{pkcol.propertyName}  #if(!$foreach.last), #end
+##    #end
+#end
+##宏定义,用于多对象的删除与查找的参数
+#macro( primaryKeys $tbb )
+    #foreach($pkcol in $tbb.pkcol)#if($foreach.last)List<$!{pkcol.propertyType}> $!{pkcol.propertyName}List#else$!{pkcol.propertyType} $!{pkcol.propertyName},#end#end
+##    #foreach($pkcol in $tbb.pkcol)
+##        #if($foreach.last)
+##        List<$!{pkcol.propertyType}> $!{pkcol.propertyName}List
+##        #else$!{pkcol.propertyType} $!{pkcol.propertyName},
+##        #end
+##    #end
+#end
 #set($conf=$!{tbb.conf})
 #set($PO = $!{gb.objSuffix})
 #set($clear = "")
@@ -48,16 +64,31 @@ public interface $!{tbb.className}Service{
     /**
      * 根据主键查询
      */
-	public $!{tbb.className}${PO} get$!{tbb.className}${PO}ByKey($!{tbb.className}${PO} $!{tbb.objectName});
+	public $!{tbb.className}${PO} get$!{tbb.className}${PO}ByKey(#primaryKey($tbb));
 #end
-	
+#if($conf.isGetByKeys())
+    /**
+     * 根据主键批量查询
+     */
+    public List<$!{tbb.className}${PO}> get$!{tbb.className}${PO}ByKeys(#primaryKeys($tbb));
+#end
+
+
 #if($conf.isDelByKey())
     /**
      * 根据主键删除
      * @return
      */
-	public Integer deleteByKey($!{tbb.className}${PO} $!{tbb.objectName});
-#end	
+	public Integer deleteByKey(#primaryKey($tbb));
+#end
+#if($conf.isDelByKeys())
+    /**
+     * 根据主键批量删除
+     * @return
+     */
+    public Integer deleteByKeys(#primaryKeys($tbb));
+#end
+
 #if($conf.isUpdateKey())
     /**
      * 根据主键更新
