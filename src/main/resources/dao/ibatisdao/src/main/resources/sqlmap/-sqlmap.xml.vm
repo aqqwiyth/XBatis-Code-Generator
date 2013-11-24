@@ -157,7 +157,12 @@
                 #foreach($cb in $tbb.colList)
                 #if(${cb.colName}!=${conf.addField} && ${cb.colName}!=${conf.updField})
                     <isNotNull prepend="," property="$!{cb.propertyName}">
-                        $cb.colNameCheck = #$!{cb.propertyName}#
+                        #if($conf.isSubString() && $cb.propertyType =="String")
+                        ##这里只对String类型与mysql作了一个示例，其他请自行修改
+                            $cb.colNameCheck =  substring(#$!{cb.propertyName.trim()}#,1,$!{cb.precision})
+                        #else
+                            $cb.colNameCheck = #$!{cb.propertyName}#
+                        #end
                     </isNotNull>
                 #end
             #end
@@ -232,7 +237,12 @@
                             ,now()
                 #else
                     <isNotEmpty  prepend="," property="$!{cb.propertyName}">
+                        #if($conf.isSubString() && $cb.propertyType =="String")
+                            ##这里只对String类型与mysql作了一个示例，其他请自行修改
+                            substring(#$!{cb.propertyName.trim()}#,1,$!{cb.precision})
+                        #else
                             #$!{cb.propertyName.trim()}#
+                        #end
                     </isNotEmpty >
                 #end
             #end

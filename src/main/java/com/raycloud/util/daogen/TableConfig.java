@@ -1,19 +1,13 @@
 package com.raycloud.util.daogen;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
- *
  * @author microboss
- *
- * Maizhibin修改内容
- *  1. 添加是否分表设置
- *  2. 添加自定义主键
+ *         <p/>
+ *         Maizhibin修改内容
+ *         1. 添加是否分表设置
+ *         2. 添加自定义主键
  */
 public class TableConfig {
 
@@ -25,30 +19,39 @@ public class TableConfig {
     // 设置表前缀，如erp_
     private String tablePrefix;
 
-    /**更新字段**/
+    /**
+     * 更新字段*
+     */
     private String updField = "upd_time";
-    /**新增字段**/
+    /**
+     * 新增字段*
+     */
     private String addField = "add_time";
 
     private String name;
 
     // 是否分表，如将Trade表分为Trade_1, Trade_2, Trade_3
     private boolean splitTable = false;
-    /**可以自定义字段查询**/
+    /**
+     * 可以自定义字段查询*
+     */
     private boolean customField = true;
 
     //get
-    private boolean getByKey  = true;
+    private boolean getByKey = true;
     private boolean getByKeys = true;
-    private boolean needPage  = true;
+    private boolean needPage = true;
 
     //delete
-    private boolean delByKey  = true;
+    private boolean delByKey = true;
     private boolean delByKeys = true;
 
     //update
     private boolean updateKey = true;
     private boolean updateKeys = false;
+
+    //截取防止data to long
+    private boolean subString = true;
 
     /**
      * key 为方法名,如包含List,则生成list，String[]为过滤字段，关于排序和个数，limit请暂时另行添加
@@ -65,7 +68,8 @@ public class TableConfig {
     //queryPage
     private List<String> orderCol = new ArrayList<String>();
 
-    private TableConfig() {}
+    private TableConfig() {
+    }
 
     public static TableConfig build(String name) {
         return new TableConfig().setName(name);
@@ -80,65 +84,66 @@ public class TableConfig {
         return this;
     }
 
-    public TableConfig addQueryMethodAndCol(String method,String[] wheres){
-		this.selectMap.put(method, wheres);
-		return this;
-	}
+    public TableConfig addQueryMethodAndCol(String method, String[] wheres) {
+        this.selectMap.put(method, wheres);
+        return this;
+    }
 
-	/**
-	 * 增加排序规则，适用于分页
-	 * @param colName
-	 * @return
-	 */
-	public TableConfig addQueryOrderBy(String colName){
-		this.orderCol.add(colName);
-		return this;
-	}
+    /**
+     * 增加排序规则，适用于分页
+     *
+     * @param colName
+     * @return
+     */
+    public TableConfig addQueryOrderBy(String colName) {
+        this.orderCol.add(colName);
+        return this;
+    }
 
-	public boolean isGetByKey() {
-		return getByKey;
-	}
+    public boolean isGetByKey() {
+        return getByKey;
+    }
 
-	public TableConfig setGetByKey(boolean getByKey) {
-		this.getByKey = getByKey;
-		return this;
-	}
+    public TableConfig setGetByKey(boolean getByKey) {
+        this.getByKey = getByKey;
+        return this;
+    }
 
-	public boolean isGetByKeys() {
-		return getByKeys;
-	}
+    public boolean isGetByKeys() {
+        return getByKeys;
+    }
 
-	public TableConfig setGetByKeys(boolean getByKeys) {
-		this.getByKeys = getByKeys;
-		return this;
-	}
+    public TableConfig setGetByKeys(boolean getByKeys) {
+        this.getByKeys = getByKeys;
+        return this;
+    }
 
-	public boolean isNeedPage() {
-		return needPage;
-	}
+    public boolean isNeedPage() {
+        return needPage;
+    }
 
-	public TableConfig setNeedPage(boolean needPage) {
-		this.needPage = needPage;
-		return this;
-	}
+    public TableConfig setNeedPage(boolean needPage) {
+        this.needPage = needPage;
+        return this;
+    }
 
-	public boolean isDelByKey() {
-		return delByKey;
-	}
+    public boolean isDelByKey() {
+        return delByKey;
+    }
 
-	public TableConfig setDelByKey(boolean delByKey) {
-		this.delByKey = delByKey;
-		return this;
-	}
+    public TableConfig setDelByKey(boolean delByKey) {
+        this.delByKey = delByKey;
+        return this;
+    }
 
-	public boolean isDelByKeys() {
-		return delByKeys;
-	}
+    public boolean isDelByKeys() {
+        return delByKeys;
+    }
 
-	public TableConfig setDelByKeys(boolean delByKeys) {
-		this.delByKeys = delByKeys;
-		return this;
-	}
+    public TableConfig setDelByKeys(boolean delByKeys) {
+        this.delByKeys = delByKeys;
+        return this;
+    }
 
     public boolean isUpdateKeys() {
         return updateKeys;
@@ -159,20 +164,20 @@ public class TableConfig {
     }
 
     public Set<String[]> getUpdateCols() {
-		return updateCols;
-	}
+        return updateCols;
+    }
 
-	public void setUpdateCols(Set<String[]> updateCols) {
-		this.updateCols = updateCols;
-	}
+    public void setUpdateCols(Set<String[]> updateCols) {
+        this.updateCols = updateCols;
+    }
 
-	public List<String> getOrderCol() {
-		return orderCol;
-	}
+    public List<String> getOrderCol() {
+        return orderCol;
+    }
 
-	public Map<String, String[]> getSelectMap() {
-		return selectMap;
-	}
+    public Map<String, String[]> getSelectMap() {
+        return selectMap;
+    }
 
     public boolean isSplitTable() {
         return splitTable;
@@ -226,5 +231,13 @@ public class TableConfig {
     public TableConfig setCustomField(boolean customField) {
         this.customField = customField;
         return this;
+    }
+
+    public boolean isSubString() {
+        return subString;
+    }
+
+    public void setSubString(boolean subString) {
+        this.subString = subString;
     }
 }
