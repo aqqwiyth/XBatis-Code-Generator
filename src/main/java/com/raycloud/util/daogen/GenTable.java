@@ -22,7 +22,11 @@ public class GenTable {
 	private List<String> allTableName;
 
 	private String alltables;
-	private Map<String,List<String>> allTablePK;
+    /**
+     * <表名称,主键有序集合>
+     *
+     */
+	private Map<String,Set<String>> allTablePK;
 	
 	public GenTable(DbConn dbConn){
 		conn = dbConn;
@@ -63,30 +67,18 @@ public class GenTable {
 		logger.info("生成表对象成功，表名：" + tableName);
 		return tableBean;
 	}
-	
+
+    /**
+     * 用于检查表是否符合创建条件，其他自行实现
+     * @param tableBean
+     * @return
+     */
 	private boolean checkTableBean(TableBean tableBean){
 		// 校验主键是否为空
-//		if (tableBean.getPkcol() == null) {
-//			logger.error("表["+tableBean.getTableName()+"]自增主键不存在,不生成此表DAO层代码！");
-//			return false;
-//		}
-		// 校验主键是否命名为id,？为啥一定要设置为id？
-//		if (!"id".equals(tableBean.getPkcol().getColName())) {
-//			logger.error("表["+tableBean.getTableName()+"]主键命名不是id,不生成此表DAO层代码！");
-//			return false;
-//		}
-		// 校验字段中是否含有gmt_create或gmt_modified，此处为淘宝定制，一定要的字段
-//		List<ColBean> cbList = tableBean.getColList();
-//		boolean hasGmtCreate = false;
-//		boolean hasGmtModified = false;
-//		for(ColBean cb:cbList){
-//			if("gmtCreate".equals(cb.getPropertyName())) hasGmtCreate = true;
-//			if("gmtModified".equals(cb.getPropertyName())) hasGmtModified = true;
-//		}
-//		if(!hasGmtCreate||!hasGmtModified){
-//			logger.error("表["+tableBean.getTableName()+"]没有gmt_create或gmt_modified字段,不生成此表DAO层代码！");
-//			return false;
-//		}
+		if (tableBean.getPkcol().size() == 0) {
+			logger.error("表["+tableBean.getTableName()+"]自增主键不存在,不生成此表DAO层代码！");
+			return false;
+		}
 		return true;
 	}
 
@@ -96,33 +88,12 @@ public class GenTable {
 	 * @return
 	 */
 	private TableBean convertTableBean(TableBean tableBean) {
-		// 设置表对象主键名为id(按源自段设置）
-		if (tableBean.getPkcol() != null) {
-			List<ColBean> cbs = tableBean.getPkcol();
-            for (ColBean cb : cbs) {
-                cb.setPropertyName(ColBean.getPropName(cb.getColName()));
-//			cb.setPropertyName("id");
-                cb.setMethodName(ColBean.getMethodName(cb.getPropertyName()));
-                cb.setPropertyType(SqlType2Feild.mapJavaType(cb.getColSQLType()));
-//			cb.setHibernateType(FieldMapping.mapHibernateType(cb.getColSQLType()));
-            }
-		}
-		// 设置表对象其他字段
 		List<ColBean> ll = tableBean.getColList();
 		for (Iterator<ColBean> it = ll.iterator(); it.hasNext();) {
 			ColBean cb = it.next();
 			cb.setPropertyName(ColBean.getPropName(cb.getColName()));
 			cb.setMethodName(ColBean.getMethodName(cb.getPropertyName()));
 			cb.setPropertyType(SqlType2Feild.mapJavaType(cb.getColSQLType()));
-		}
-		// 将主键加入字段列表
-		if (tableBean.getPkcol().size() > 0) {
-            for (ColBean bean : tableBean.getPkcol()) {
-                if(!tableBean.getColMap().containsKey(bean.getColName())){
-                    tableBean.getColMap().put(bean.getColName(), bean);
-                    ll.add(0, bean);
-                }
-            }
 		}
 		return tableBean;
 	}
@@ -208,20 +179,20 @@ public class GenTable {
      * 从索引获取主键
      * @return
      */
-    private Map<String, List<String>> getAllTablePKBYIndex(){
-        HashMap<String, List<String>> map = new HashMap<String, List<String>>();
-        DatabaseMetaData dbmd = null;
-        ResultSet rs = null;
+    private Map<String, Set<String>> getAllTablePKBYIndex(){
+        HashMap<String, Set<String>> map = new HashMap<String, Set<String>>();
+        DatabaseMetaData dbmd;
+        ResultSet rs;
         try {
             dbmd = conn.getDatabaseMetaData();
             logger.info("============================从索引获取主键:");
             for(String t:allTableName){
                 rs = dbmd.getIndexInfo(null, null, t, true,false);
-                List<String> list =new ArrayList<String>();
+                 Set<String> set =new LinkedHashSet<String>();
                 while (rs.next()) {
-                    list.add(rs.getString("COLUMN_NAME"));
+                    set.add(rs.getString("COLUMN_NAME"));
                 }
-                map.put(t.toLowerCase(), list);
+                map.put(t.toLowerCase(), set);
             }
         } catch (SQLException e) {
             logger.error("获取所有指定表的主键信息出错", e);
@@ -292,19 +263,23 @@ public class GenTable {
 				if(!as.containsKey(sqltype)){
 					as.put(sqltype, "typeName:" + rs.getString(6) + " -> className:【无】");
 				}
-				// 设置主键并添加进表对象,暂时没有查看排序是否正常
-				List<String> pkfieldnames = allTablePK.get(tableBean.getTableName());
-                for (String pkfieldname : pkfieldnames) {
-                    if (colName.equalsIgnoreCase(pkfieldname)) {
-                        cb.setPK(true);
-                        tableBean.addPkcol(cb);
-                        break;
-                    } else {
-                        cb.setPK(false);
-                        tableBean.addColBean(cb);
+				Set<String> pkfieldNameSet = allTablePK.get(tableBean.getTableName());
+                boolean isPrimaryKey = pkfieldNameSet.contains(colName);
+                cb.setPK(isPrimaryKey);
+                tableBean.addColBean(cb);
+			}
+            /**根据主键列名获取列对象**/
+            Set<String> pkfieldNameSet = allTablePK.get(tableBean.getTableName());
+            for (String pkName : pkfieldNameSet) {
+                for (ColBean colBean : tableBean.getColList()) {
+                    if(colBean.getColName().equals(pkName)){
+                        tableBean.addPkcol(colBean);
                     }
                 }
-			}
+            }
+            /**主键提前**/
+            tableBean.getColList().removeAll(tableBean.getPkcol());
+            tableBean.getColList().addAll(0,tableBean.getPkcol());
 		} catch (SQLException e) {
 			logger.error("获取所有指定表的字段出错", e);
 		}

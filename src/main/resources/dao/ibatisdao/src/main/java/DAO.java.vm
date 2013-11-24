@@ -5,6 +5,41 @@
 ##$!{gb.nowDate}当前日期，如：2013-05-02
 ##$!{tbb.className}类名，如：UserInfo
 ##$!{tbb.objectName}对象名，如：userInfo
+##宏定义,用于单一对象的删除与查找的参数
+#macro(primaryKey $tbb)
+    #foreach($pkcol in $tbb.pkcol) $!{pkcol.propertyType} $!{pkcol.propertyName}  #if(!$foreach.last), #end #end
+##    #foreach($pkcol in $tbb.pkcol)
+##        $!{pkcol.propertyType} $!{pkcol.propertyName}  #if(!$foreach.last), #end
+##    #end
+#end
+##宏定义,用于多对象的删除与查找的方法体
+#macro( primaryKeyBody $tbb )
+        Map<String, Object> params = new HashMap<String, Object>();
+    #foreach($pkcol in $tbb.pkcol)
+        params.put("$!{pkcol.propertyName}", $!{pkcol.propertyName});
+    #end
+#end
+##宏定义,用于多对象的删除与查找的参数
+#macro( primaryKeys $tbb )
+    #foreach($pkcol in $tbb.pkcol)#if($foreach.last)List<$!{pkcol.propertyType}> $!{pkcol.propertyName}List#else$!{pkcol.propertyType} $!{pkcol.propertyName},#end#end
+##    #foreach($pkcol in $tbb.pkcol)
+##        #if($foreach.last)
+##        List<$!{pkcol.propertyType}> $!{pkcol.propertyName}List
+##        #else$!{pkcol.propertyType} $!{pkcol.propertyName},
+##        #end
+##    #end
+#end
+##宏定义,用于多对象的删除与查找的方法体
+#macro( primaryKeysBody $tbb )
+        Map<String, Object> params = new HashMap<String, Object>();
+    #foreach($pkcol in $tbb.pkcol)
+        #if($foreach.last)
+        params.put("keys", $!{pkcol.propertyName}List);
+        #else
+        params.put("$!{pkcol.propertyName}", $!{pkcol.propertyName});
+        #end
+    #end
+#end
 #set($conf=$!{tbb.conf})
 #set($PO = $!{gb.objSuffix})
 #set($clear = "")
@@ -58,14 +93,25 @@ public class $!{tbb.className}DAO {
 
 #if($conf.isGetByKey())
     /**
-     * 根据主键查找
+    * 根据主键查找
+    * @throws SQLException
+    */
+    public $!{tbb.className}${PO} get$!{tbb.className}${PO}ByKey(#primaryKey($tbb)) throws SQLException {
+        #primaryKeyBody($tbb)
+        $!{tbb.className}$PO result = ($!{tbb.className}$PO) this.sqlMapClientTemplate.queryForObject(
+                "$!{tbb.className}.get$!{tbb.className}${PO}ByKey", params);
+        return result;
+    }
+#end
+#if($conf.isGetByKeys())
+    /**
+     * 根据主键批量查找
      * @throws SQLException
      */
-	public $!{tbb.className}${PO} get$!{tbb.className}${PO}ByKey($!{tbb.className}${PO} $!{tbb.objectName}) throws SQLException {
-		$!{tbb.className}$PO result = ($!{tbb.className}$PO) this.sqlMapClientTemplate.queryForObject(
-				"$!{tbb.className}.get$!{tbb.className}${PO}ByKey", $!{tbb.objectName});
-		return result;
-	}
+    public  List<$!{tbb.className}${PO}> get$!{tbb.className}${PO}ByKeys(#primaryKeys($tbb)) throws SQLException {
+        #primaryKeysBody($tbb)
+        return  (List<$!{tbb.className}${PO}>)this.sqlMapClientTemplate.queryForList("$!{tbb.className}.get$!{tbb.className}${PO}sByKeys", params);
+    }
 #end
 #if($conf.isDelByKey())
     /**
@@ -73,10 +119,23 @@ public class $!{tbb.className}DAO {
      * @return
      * @throws SQLException
      */
-	public Integer deleteByKey($!{tbb.className}${PO} $!{tbb.objectName}) throws SQLException {
-		Integer row = (Integer) this.sqlMapClientTemplate.delete("$!{tbb.className}.deleteByKey", $!{tbb.objectName});
-		return row;
-	}
+    public Integer deleteByKey(#primaryKey($tbb)) throws SQLException {
+        #primaryKeyBody($tbb)
+        Integer row = (Integer) this.sqlMapClientTemplate.delete("$!{tbb.className}.deleteByKey", params);
+        return row;
+    }
+#end
+#if($conf.isDelByKeys())
+    /**
+     * 根据主键批量删除
+     * @return
+     * @throws SQLException
+     */
+    public Integer deleteByKeys(#primaryKeys($tbb)) throws SQLException {
+        #primaryKeysBody($tbb)
+        Integer row = (Integer) this.sqlMapClientTemplate.delete("$!{tbb.className}.deleteByKeys", params);
+        return row;
+    }
 #end
 #if($conf.isUpdateKey())
     /**
@@ -88,25 +147,7 @@ public class $!{tbb.className}DAO {
 		return (Integer) this.sqlMapClientTemplate.update("${tbb.className}.update${tbb.className}${PO}ByKey", $!{tbb.objectName});
 	}
 #end
-    #if($conf.selectMap.size()>0)
-	#foreach($sel in $conf.selectMap.keySet())
-		#if( $conf.selectMap.get($sel) && $conf.selectMap.get($sel).size()>0)${clear}
-	public #if($sel.indexOf("List")>=0)List<$!{tbb.className}${PO}>#{else}$!{tbb.className}${PO}#end ${sel}(#foreach($w in $conf.selectMap.get($sel))#{if}($!{tbb.colMap.get($w)})#{if}($!{velocityCount}>1),#{end}$!{tbb.colMap.get($w).propertyType} $!{tbb.colMap.get($w).colName}#{end}#{end}) throws SQLException{
-		Map<String, Object> params = new HashMap<String, Object>();
-#foreach($w in $conf.selectMap.get($sel))#if($!{tbb.colMap.get($w)})
-		params.put("$!{tbb.colMap.get($w).colName}", $!{tbb.colMap.get($w).colName});
-#end
-#end
-		#if($sel.indexOf("List")>=0)List<$!{tbb.className}${PO}> result = (List<$!{tbb.className}${PO}>) this.sqlMapClientTemplate.queryForList(
-				"$!{tbb.className}.${sel}", params);
-#else$!{tbb.className}${PO} result = ($!{tbb.className}${PO}) this.sqlMapClientTemplate.queryForObject("$!{tbb.className}.${sel}", params);
-#end
-		return result;
-	}
-		#end
-	#end
-	#end
-
+##分页
 #if($conf.isNeedPage())
     @SuppressWarnings("unchecked")
     public Result<$!{tbb.className}${PO}> get$!{tbb.className}${PO}ListWithPage($!{tbb.className}Query $!{tbb.objectName}Query){
@@ -141,5 +182,25 @@ public class $!{tbb.className}DAO {
 #end
 		return (List<$!{tbb.className}${PO}>)this.sqlMapClientTemplate.queryForList("$!{tbb.className}.get$!{tbb.className}List", $!{tbb.objectName}Query);
 	}
+
+##自定义查询
+#if($conf.selectMap.size()>0)
+    #foreach($sel in $conf.selectMap.keySet())
+        #if( $conf.selectMap.get($sel) && $conf.selectMap.get($sel).size()>0)${clear}
+            public #if($sel.indexOf("List")>=0)List<$!{tbb.className}${PO}>#{else}$!{tbb.className}${PO}#end ${sel}(#foreach($w in $conf.selectMap.get($sel))#{if}($!{tbb.colMap.get($w)})#{if}($!{velocityCount}>1),#{end}$!{tbb.colMap.get($w).propertyType} $!{tbb.colMap.get($w).colName}#{end}#{end}) throws SQLException{
+            Map<String, Object> params = new HashMap<String, Object>();
+            #foreach($w in $conf.selectMap.get($sel))#if($!{tbb.colMap.get($w)})
+                params.put("$!{tbb.colMap.get($w).colName}", $!{tbb.colMap.get($w).colName});
+            #end
+            #end
+                #if($sel.indexOf("List")>=0)List<$!{tbb.className}${PO}> result = (List<$!{tbb.className}${PO}>) this.sqlMapClientTemplate.queryForList(
+                        "$!{tbb.className}.${sel}", params);
+            #else$!{tbb.className}${PO} result = ($!{tbb.className}${PO}) this.sqlMapClientTemplate.queryForObject("$!{tbb.className}.${sel}", params);
+            #end
+            return result;
+        }
+        #end
+    #end
+#end
 
 }

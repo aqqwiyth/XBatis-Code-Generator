@@ -39,19 +39,19 @@ public class TableConfig {
 
     //get
     private boolean getByKey  = true;
-    private boolean getByKeys = false;
+    private boolean getByKeys = true;
     private boolean needPage  = true;
 
     //delete
     private boolean delByKey  = true;
-    private boolean delByKeys = false;
+    private boolean delByKeys = true;
 
     //update
     private boolean updateKey = true;
     private boolean updateKeys = false;
 
     /**
-     * key 为方法名结尾为"_s",则生成list，String[]为过滤字段，关于排序和个数，limit请暂时另行添加
+     * key 为方法名,如包含List,则生成list，String[]为过滤字段，关于排序和个数，limit请暂时另行添加
      */
     private Map<String, String[]> selectMap = new HashMap<String, String[]>();
 
