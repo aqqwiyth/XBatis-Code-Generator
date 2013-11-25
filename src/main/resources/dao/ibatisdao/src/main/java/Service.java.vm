@@ -21,11 +21,17 @@
 ##        #end
 ##    #end
 #end
+#macro( tableType $isSplitTable )
+#if($isSplitTable), String tableId#end
+#end
+#macro( tableValue $isSplitTable )
+    #if($isSplitTable), tableId#end
+#end
+
 #set($conf=$!{tbb.conf})
 #set($PO = $!{gb.objSuffix})
 #set($clear = "")
 package $!{gb.packageName}.service;
-
 import java.util.List;
 #foreach($cb in $tbb.colList)
 #if($!{cb.propertyType}=="Clob"&&!$clob)
@@ -53,7 +59,6 @@ import $!{gb.packageName}.pojo.$!{tbb.className}${PO};
  * @since $!{gb.nowDate}
  */
 public interface $!{tbb.className}Service{
-
     /**
      * 基本插入
      * @return
@@ -64,13 +69,13 @@ public interface $!{tbb.className}Service{
     /**
      * 根据主键查询
      */
-	public $!{tbb.className}${PO} get$!{tbb.className}${PO}ByKey(#primaryKey($tbb));
+	public $!{tbb.className}${PO} get$!{tbb.className}${PO}ByKey(#primaryKey($tbb)#tableType($conf.isSplitTable()));
 #end
 #if($conf.isGetByKeys())
     /**
      * 根据主键批量查询
      */
-    public List<$!{tbb.className}${PO}> get$!{tbb.className}${PO}ByKeys(#primaryKeys($tbb));
+    public List<$!{tbb.className}${PO}> get$!{tbb.className}${PO}ByKeys(#primaryKeys($tbb)#tableType($conf.isSplitTable());
 #end
 
 
@@ -79,14 +84,14 @@ public interface $!{tbb.className}Service{
      * 根据主键删除
      * @return
      */
-	public Integer deleteByKey(#primaryKey($tbb));
+	public Integer deleteByKey(#primaryKey($tbb)#tableType($conf.isSplitTable()));
 #end
 #if($conf.isDelByKeys())
     /**
      * 根据主键批量删除
      * @return
      */
-    public Integer deleteByKeys(#primaryKeys($tbb));
+    public Integer deleteByKeys(#primaryKeys($tbb)#tableType($conf.isSplitTable()));
 #end
 
 #if($conf.isUpdateKey())
@@ -113,7 +118,7 @@ public interface $!{tbb.className}Service{
 #if($conf.selectMap.size()>0)
 #foreach($sel in $conf.selectMap.keySet())
 #if( $conf.selectMap.get($sel) && $conf.selectMap.get($sel).size()>0)${clear}
-    public #if($sel.indexOf("List")>=0)List<$!{tbb.className}${PO}>#{else}$!{tbb.className}${PO}#end ${sel}(#foreach($w in $conf.selectMap.get($sel))#{if}($!{tbb.colMap.get($w)})#{if}($!{velocityCount}>1),#{end}$!{tbb.colMap.get($w).propertyType} $!{tbb.colMap.get($w).colName}#{end}#{end});
+    public #if($sel.indexOf("List")>=0)List<$!{tbb.className}${PO}>#{else}$!{tbb.className}${PO}#end ${sel}(#foreach($w in $conf.selectMap.get($sel))#{if}($!{tbb.colMap.get($w)})#{if}($!{velocityCount}>1),#{end}$!{tbb.colMap.get($w).propertyType} $!{tbb.colMap.get($w).propertyName}#{end}#{end}#tableType($conf.isSplitTable()));
 #end
 #end
 #end

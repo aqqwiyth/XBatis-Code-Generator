@@ -237,7 +237,8 @@ public class TableConfig {
         return subString;
     }
 
-    public void setSubString(boolean subString) {
+    public TableConfig setSubString(boolean subString) {
         this.subString = subString;
+        return this;
     }
 }
