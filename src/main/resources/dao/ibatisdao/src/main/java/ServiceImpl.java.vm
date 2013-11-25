@@ -21,6 +21,12 @@
 #macro( primaryValues $tbb )
     #foreach($pkcol in $tbb.pkcol)#if($foreach.last)$!{pkcol.propertyName}List#else $!{pkcol.propertyName},#end#end
 #end
+#macro( tableType $isSplitTable )
+    #if($isSplitTable), String tableId#end
+#end
+#macro( tableValue $isSplitTable )
+    #if($isSplitTable), tableId#end
+#end
 #set($conf=$!{tbb.conf})
 #set($PO = $!{gb.objSuffix})
 #set($clear = "")
@@ -88,9 +94,9 @@ public class $!{tbb.className}ServiceImpl implements $!{tbb.className}Service{
     /**
      * 根据主键查找
      */
-	public $!{tbb.className}${PO} get$!{tbb.className}${PO}ByKey(#primaryKey($tbb)){
+	public $!{tbb.className}${PO} get$!{tbb.className}${PO}ByKey(#primaryKey($tbb)#tableType($conf.isSplitTable())){
 		try{
-			return $!{tbb.objectName}DAO.get$!{tbb.className}${PO}ByKey(#primaryValue($tbb));
+			return $!{tbb.objectName}DAO.get$!{tbb.className}${PO}ByKey(#primaryValue($tbb)#tableValue($conf.isSplitTable()));
 		}catch(SQLException e){
 			log.error("dao get$!{tbb.className}${PO}byKey error.:" + e.getMessage(), e);
 		}
@@ -98,9 +104,9 @@ public class $!{tbb.className}ServiceImpl implements $!{tbb.className}Service{
 	}
 #end
 #if($conf.isGetByKeys())
-    public List<$!{tbb.className}${PO}> get$!{tbb.className}${PO}ByKeys(#primaryKeys($tbb)){
+    public List<$!{tbb.className}${PO}> get$!{tbb.className}${PO}ByKeys(#primaryKeys($tbb)#tableType($conf.isSplitTable())){
         try{
-            return $!{tbb.objectName}DAO.get$!{tbb.className}${PO}ByKeys(#primaryValues($tbb));
+            return $!{tbb.objectName}DAO.get$!{tbb.className}${PO}ByKeys(#primaryValues($tbb)#tableValue($conf.isSplitTable()));
         }catch(SQLException e){
             log.error("dao get$!{tbb.className}${PO}sByKeys erorr."+ e.getMessage(),e);
         }
@@ -112,9 +118,9 @@ public class $!{tbb.className}ServiceImpl implements $!{tbb.className}Service{
      * 根据主键删除
      * @return
      */
-	public Integer deleteByKey(#primaryKey($tbb)){
+	public Integer deleteByKey(#primaryKey($tbb)#tableType($conf.isSplitTable())){
 		try{
-			return $!{tbb.objectName}DAO.deleteByKey(#primaryValue($tbb));
+			return $!{tbb.objectName}DAO.deleteByKey(#primaryValue($tbb)#tableValue($conf.isSplitTable()));
 		}catch(SQLException e){
 		    log.error("dao deleteByKey error. :" + e.getMessage(), e);
 		}
@@ -122,9 +128,9 @@ public class $!{tbb.className}ServiceImpl implements $!{tbb.className}Service{
 	}
 #end
 #if($conf.isDelByKeys())
-    public Integer deleteByKeys(#primaryKeys($tbb)){
+    public Integer deleteByKeys(#primaryKeys($tbb)#tableType($conf.isSplitTable())){
         try{
-            return $!{tbb.objectName}DAO.deleteByKeys(#primaryValues($tbb));
+            return $!{tbb.objectName}DAO.deleteByKeys(#primaryValues($tbb)#tableValue($conf.isSplitTable()));
         }catch(SQLException e){
             log.error("dao deleteByKeys error. $!{tbb.pkcol.propertyName}s:" + e.getMessage(), e);
         }
@@ -168,9 +174,9 @@ public class $!{tbb.className}ServiceImpl implements $!{tbb.className}Service{
 #if($conf.selectMap.size()>0)
 #foreach($sel in $conf.selectMap.keySet())
 #if( $conf.selectMap.get($sel) && $conf.selectMap.get($sel).size()>0)${clear}
-    public #if($sel.indexOf("List")>=0)List<$!{tbb.className}${PO}>#{else}$!{tbb.className}${PO}#end ${sel}(#foreach($w in $conf.selectMap.get($sel))#{if}($!{tbb.colMap.get($w)})#{if}($!{velocityCount}>1),#{end}$!{tbb.colMap.get($w).propertyType} $!{tbb.colMap.get($w).colName}#{end}#{end}){
+    public #if($sel.indexOf("List")>=0)List<$!{tbb.className}${PO}>#{else}$!{tbb.className}${PO}#end ${sel}(#foreach($w in $conf.selectMap.get($sel))#{if}($!{tbb.colMap.get($w)})#{if}($!{velocityCount}>1),#{end}$!{tbb.colMap.get($w).propertyType} $!{tbb.colMap.get($w).propertyName}#{end}#{end}#tableType($conf.isSplitTable())){
         try{
-            return (#if($sel.indexOf("List")>=0)List<$!{tbb.className}${PO}>#{else}$!{tbb.className}${PO}#end)$!{tbb.objectName}DAO.${sel}(#foreach($w in $conf.selectMap.get($sel))#{if}($!{tbb.colMap.get($w)})#{if}($!{velocityCount}>1),#{end}$!{tbb.colMap.get($w).colName}#{end}#{end});
+            return (#if($sel.indexOf("List")>=0)List<$!{tbb.className}${PO}>#{else}$!{tbb.className}${PO}#end)$!{tbb.objectName}DAO.${sel}(#foreach($w in $conf.selectMap.get($sel))#{if}($!{tbb.colMap.get($w)})#{if}($!{velocityCount}>1),#{end}$!{tbb.colMap.get($w).propertyName}#{end}#{end}#tableValue($conf.isSplitTable()));
         }catch(SQLException e){
             log.error("dao ${sel} error" + e.getMessage(),e);
         }
