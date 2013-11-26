@@ -8,18 +8,22 @@
 ##宏定义,用于单一对象的删除与查找的参数
 #macro(primaryKey $tbb)
     #foreach($pkcol in $tbb.pkcol) $!{pkcol.propertyType} $!{pkcol.propertyName}  #if(!$foreach.last), #end #end
+    #if($conf.isSplitTable()), String tableId#end
 #end
 ##宏定义,用于多对象的删除与查找的参数
 #macro( primaryKeys $tbb )
     #foreach($pkcol in $tbb.pkcol)#if($foreach.last)List<$!{pkcol.propertyType}> $!{pkcol.propertyName}List#else$!{pkcol.propertyType} $!{pkcol.propertyName},#end#end
+    #if($conf.isSplitTable()), String tableId#end
 #end
 ##主键值
 #macro( primaryValue $tbb)
     #foreach($pkcol in $tbb.pkcol)$!{pkcol.propertyName}  #if(!$foreach.last), #end #end
+    #if($conf.isSplitTable()), tableId #end
 #end
 ##主键值
 #macro( primaryValues $tbb )
     #foreach($pkcol in $tbb.pkcol)#if($foreach.last)$!{pkcol.propertyName}List#else $!{pkcol.propertyName},#end#end
+    #if($conf.isSplitTable()), tableId #end
 #end
 #macro( tableType $isSplitTable )
     #if($isSplitTable), String tableId#end
@@ -96,9 +100,9 @@ public class $!{tbb.className}ServiceImpl implements $!{tbb.className}Service{
     /**
      * 根据主键查找
      */
-	public $!{tbb.className}${PO} get$!{tbb.className}${PO}ByKey(#primaryKey($tbb)#tableType($conf.isSplitTable())){
+	public $!{tbb.className}${PO} get$!{tbb.className}${PO}ByKey(#primaryKey($tbb)){
 		try{
-			return $!{tbb.objectName}DAO.get$!{tbb.className}${PO}ByKey(#primaryValue($tbb)#tableValue($conf.isSplitTable()));
+			return $!{tbb.objectName}DAO.get$!{tbb.className}${PO}ByKey(#primaryValue($tbb));
 		}catch(SQLException e){
 			log.error("dao get$!{tbb.className}${PO}byKey error.:" + e.getMessage(), e);
 		}
@@ -106,9 +110,9 @@ public class $!{tbb.className}ServiceImpl implements $!{tbb.className}Service{
 	}
 #end
 #if($conf.isGetByKeys())
-    public List<$!{tbb.className}${PO}> get$!{tbb.className}${PO}ByKeys(#primaryKeys($tbb)#tableType($conf.isSplitTable())){
+    public List<$!{tbb.className}${PO}> get$!{tbb.className}${PO}ByKeys(#primaryKeys($tbb)){
         try{
-            return $!{tbb.objectName}DAO.get$!{tbb.className}${PO}ByKeys(#primaryValues($tbb)#tableValue($conf.isSplitTable()));
+            return $!{tbb.objectName}DAO.get$!{tbb.className}${PO}ByKeys(#primaryValues($tbb));
         }catch(SQLException e){
             log.error("dao get$!{tbb.className}${PO}sByKeys erorr."+ e.getMessage(),e);
         }
@@ -120,9 +124,9 @@ public class $!{tbb.className}ServiceImpl implements $!{tbb.className}Service{
      * 根据主键删除
      * @return
      */
-	public Integer deleteByKey(#primaryKey($tbb)#tableType($conf.isSplitTable())){
+	public Integer deleteByKey(#primaryKey($tbb)){
 		try{
-			return $!{tbb.objectName}DAO.deleteByKey(#primaryValue($tbb)#tableValue($conf.isSplitTable()));
+			return $!{tbb.objectName}DAO.deleteByKey(#primaryValue($tbb));
 		}catch(SQLException e){
 		    log.error("dao deleteByKey error. :" + e.getMessage(), e);
 		}
@@ -130,9 +134,9 @@ public class $!{tbb.className}ServiceImpl implements $!{tbb.className}Service{
 	}
 #end
 #if($conf.isDelByKeys())
-    public Integer deleteByKeys(#primaryKeys($tbb)#tableType($conf.isSplitTable())){
+    public Integer deleteByKeys(#primaryKeys($tbb)){
         try{
-            return $!{tbb.objectName}DAO.deleteByKeys(#primaryValues($tbb)#tableValue($conf.isSplitTable()));
+            return $!{tbb.objectName}DAO.deleteByKeys(#primaryValues($tbb));
         }catch(SQLException e){
             log.error("dao deleteByKeys error. $!{tbb.pkcol.propertyName}s:" + e.getMessage(), e);
         }
@@ -176,9 +180,9 @@ public class $!{tbb.className}ServiceImpl implements $!{tbb.className}Service{
 #if($conf.selectMap.size()>0)
 #foreach($sel in $conf.selectMap.keySet())
 #if( $conf.selectMap.get($sel) && $conf.selectMap.get($sel).size()>0)${clear}
-    public #if($sel.indexOf("List")>=0)List<$!{tbb.className}${PO}>#{else}$!{tbb.className}${PO}#end ${sel}(#foreach($w in $conf.selectMap.get($sel))#{if}($!{tbb.colMap.get($w)})#{if}($!{velocityCount}>1),#{end}$!{tbb.colMap.get($w).propertyType} $!{tbb.colMap.get($w).propertyName}#{end}#{end}#tableType($conf.isSplitTable())){
+    public #if($sel.indexOf("List")>=0)List<$!{tbb.className}${PO}>#{else}$!{tbb.className}${PO}#end ${sel}(#foreach($w in $conf.selectMap.get($sel))#{if}($!{tbb.colMap.get($w)})#{if}($!{velocityCount}>1),#{end}$!{tbb.colMap.get($w).propertyType} $!{tbb.colMap.get($w).propertyName}#{end}#{end}){
         try{
-            return (#if($sel.indexOf("List")>=0)List<$!{tbb.className}${PO}>#{else}$!{tbb.className}${PO}#end)$!{tbb.objectName}DAO.${sel}(#foreach($w in $conf.selectMap.get($sel))#{if}($!{tbb.colMap.get($w)})#{if}($!{velocityCount}>1),#{end}$!{tbb.colMap.get($w).propertyName}#{end}#{end}#tableValue($conf.isSplitTable()));
+            return (#if($sel.indexOf("List")>=0)List<$!{tbb.className}${PO}>#{else}$!{tbb.className}${PO}#end)$!{tbb.objectName}DAO.${sel}(#foreach($w in $conf.selectMap.get($sel))#{if}($!{tbb.colMap.get($w)})#{if}($!{velocityCount}>1),#{end}$!{tbb.colMap.get($w).propertyName}#{end}#{end});
         }catch(SQLException e){
             log.error("dao ${sel} error" + e.getMessage(),e);
         }

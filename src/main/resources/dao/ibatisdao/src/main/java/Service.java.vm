@@ -5,31 +5,16 @@
 ##$!{gb.nowDate}当前日期，如：2013-05-02
 ##$!{tbb.className}类名，如：UserInfo
 ##$!{tbb.objectName}对象名，如：userInfo
-#macro(primaryKey $tbb)
+##宏定义,用于单一对象的删除与查找的参数
+#macro(primaryKey)
     #foreach($pkcol in $tbb.pkcol) $!{pkcol.propertyType} $!{pkcol.propertyName}  #if(!$foreach.last), #end #end
-##    #foreach($pkcol in $tbb.pkcol)
-##        $!{pkcol.propertyType} $!{pkcol.propertyName}  #if(!$foreach.last), #end
-##    #end
+    #if($conf.isSplitTable()), String tableId#end
 #end
 ##宏定义,用于多对象的删除与查找的参数
 #macro( primaryKeys $tbb )
     #foreach($pkcol in $tbb.pkcol)#if($foreach.last)List<$!{pkcol.propertyType}> $!{pkcol.propertyName}List#else$!{pkcol.propertyType} $!{pkcol.propertyName},#end#end
-##    #foreach($pkcol in $tbb.pkcol)
-##        #if($foreach.last)
-##        List<$!{pkcol.propertyType}> $!{pkcol.propertyName}List
-##        #else$!{pkcol.propertyType} $!{pkcol.propertyName},
-##        #end
-##    #end
+#if($conf.isSplitTable()), String tableId#end
 #end
-#macro( tableType $isSplitTable )
-#if($isSplitTable), String tableId#end
-#end
-#macro( tableValue $isSplitTable )
-    #if($isSplitTable)
-        #if($isSplitTable), tableId#end
-    #end
-#end
-
 #set($conf=$!{tbb.conf})
 #set($PO = $!{gb.objSuffix})
 #set($clear = "")
@@ -71,13 +56,13 @@ public interface $!{tbb.className}Service{
     /**
      * 根据主键查询
      */
-	public $!{tbb.className}${PO} get$!{tbb.className}${PO}ByKey(#primaryKey($tbb)#tableType($conf.isSplitTable()));
+	public $!{tbb.className}${PO} get$!{tbb.className}${PO}ByKey(#primaryKey($tbb));
 #end
 #if($conf.isGetByKeys())
     /**
      * 根据主键批量查询
      */
-    public List<$!{tbb.className}${PO}> get$!{tbb.className}${PO}ByKeys(#primaryKeys($tbb)#tableType($conf.isSplitTable()));
+    public List<$!{tbb.className}${PO}> get$!{tbb.className}${PO}ByKeys(#primaryKeys($tbb));
 #end
 
 
@@ -86,14 +71,14 @@ public interface $!{tbb.className}Service{
      * 根据主键删除
      * @return
      */
-	public Integer deleteByKey(#primaryKey($tbb)#tableType($conf.isSplitTable()));
+	public Integer deleteByKey(#primaryKey($tbb));
 #end
 #if($conf.isDelByKeys())
     /**
      * 根据主键批量删除
      * @return
      */
-    public Integer deleteByKeys(#primaryKeys($tbb)#tableType($conf.isSplitTable()));
+    public Integer deleteByKeys(#primaryKeys($tbb));
 #end
 
 #if($conf.isUpdateKey())
@@ -120,7 +105,7 @@ public interface $!{tbb.className}Service{
 #if($conf.selectMap.size()>0)
 #foreach($sel in $conf.selectMap.keySet())
 #if( $conf.selectMap.get($sel) && $conf.selectMap.get($sel).size()>0)${clear}
-    public #if($sel.indexOf("List")>=0)List<$!{tbb.className}${PO}>#{else}$!{tbb.className}${PO}#end ${sel}(#foreach($w in $conf.selectMap.get($sel))#{if}($!{tbb.colMap.get($w)})#{if}($!{velocityCount}>1),#{end}$!{tbb.colMap.get($w).propertyType} $!{tbb.colMap.get($w).propertyName}#{end}#{end}#tableType($conf.isSplitTable()));
+    public #if($sel.indexOf("List")>=0)List<$!{tbb.className}${PO}>#{else}$!{tbb.className}${PO}#end ${sel}(#foreach($w in $conf.selectMap.get($sel))#{if}($!{tbb.colMap.get($w)})#{if}($!{velocityCount}>1),#{end}$!{tbb.colMap.get($w).propertyType} $!{tbb.colMap.get($w).propertyName}#{end}#{end});
 #end
 #end
 #end

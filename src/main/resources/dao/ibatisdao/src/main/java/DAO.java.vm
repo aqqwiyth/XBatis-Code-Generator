@@ -6,28 +6,24 @@
 ##$!{tbb.className}类名，如：UserInfo
 ##$!{tbb.objectName}对象名，如：userInfo
 ##宏定义,用于单一对象的删除与查找的参数
-#macro(primaryKey $tbb)
+#macro(primaryKey)
     #foreach($pkcol in $tbb.pkcol) $!{pkcol.propertyType} $!{pkcol.propertyName}  #if(!$foreach.last), #end #end
-##    #foreach($pkcol in $tbb.pkcol)
-##        $!{pkcol.propertyType} $!{pkcol.propertyName}  #if(!$foreach.last), #end
-##    #end
+    #if($conf.isSplitTable()), String tableId#end
 #end
 ##宏定义,用于多对象的删除与查找的方法体
-#macro( primaryKeyBody $tbb )
+#macro( primaryKeyBody )
         Map<String, Object> params = new HashMap<String, Object>();
     #foreach($pkcol in $tbb.pkcol)
         params.put("$!{pkcol.propertyName}", $!{pkcol.propertyName});
+    #end
+    #if($conf.isSplitTable())
+    params.put("tableId", tableId);
     #end
 #end
 ##宏定义,用于多对象的删除与查找的参数
 #macro( primaryKeys $tbb )
     #foreach($pkcol in $tbb.pkcol)#if($foreach.last)List<$!{pkcol.propertyType}> $!{pkcol.propertyName}List#else$!{pkcol.propertyType} $!{pkcol.propertyName},#end#end
-##    #foreach($pkcol in $tbb.pkcol)
-##        #if($foreach.last)
-##        List<$!{pkcol.propertyType}> $!{pkcol.propertyName}List
-##        #else$!{pkcol.propertyType} $!{pkcol.propertyName},
-##        #end
-##    #end
+    #if($conf.isSplitTable()), String tableId#end
 #end
 ##宏定义,用于多对象的删除与查找的方法体
 #macro( primaryKeysBody $tbb )
@@ -39,18 +35,8 @@
         params.put("$!{pkcol.propertyName}", $!{pkcol.propertyName});
         #end
     #end
-    #if($tbb.conf.isSplitTable())
-    #end
-#end
-#macro( tableType $isSplitTable )
-    #if($isSplitTable), String tableId#end
-#end
-#macro( tableValue $isSplitTable )
-    #if($isSplitTable), tableId#end
-#end
-#macro( tableBody $isSplitTable)
-    #if($isSplitTable)
-        params.put("tableId", tableId);
+    #if($conf.isSplitTable())
+    params.put("tableId", tableId);
     #end
 #end
 #set($conf=$!{tbb.conf})
@@ -109,9 +95,8 @@ public class $!{tbb.className}DAO {
     * 根据主键查找
     * @throws SQLException
     */
-    public $!{tbb.className}${PO} get$!{tbb.className}${PO}ByKey(#primaryKey($tbb)#tableType($conf.isSplitTable())) throws SQLException {
-        #primaryKeyBody($tbb)
-        #tableBody($conf.isSplitTable())
+    public $!{tbb.className}${PO} get$!{tbb.className}${PO}ByKey(#primaryKey()) throws SQLException {
+        #primaryKeyBody()
         $!{tbb.className}$PO result = ($!{tbb.className}$PO) this.sqlMapClientTemplate.queryForObject(
                 "$!{tbb.className}.get$!{tbb.className}${PO}ByKey", params);
         return result;
@@ -122,9 +107,8 @@ public class $!{tbb.className}DAO {
      * 根据主键批量查找
      * @throws SQLException
      */
-    public  List<$!{tbb.className}${PO}> get$!{tbb.className}${PO}ByKeys(#primaryKeys($tbb)#tableType($conf.isSplitTable())) throws SQLException {
-        #primaryKeysBody($tbb)
-        #tableBody($conf.isSplitTable())
+    public  List<$!{tbb.className}${PO}> get$!{tbb.className}${PO}ByKeys(#primaryKeys()) throws SQLException {
+        #primaryKeysBody()
         return  (List<$!{tbb.className}${PO}>)this.sqlMapClientTemplate.queryForList("$!{tbb.className}.get$!{tbb.className}${PO}sByKeys", params);
     }
 #end
@@ -134,9 +118,8 @@ public class $!{tbb.className}DAO {
      * @return
      * @throws SQLException
      */
-    public Integer deleteByKey(#primaryKey($tbb)#tableType($conf.isSplitTable())) throws SQLException {
+    public Integer deleteByKey(#primaryKey($tbb)) throws SQLException {
         #primaryKeyBody($tbb)
-        #tableBody($conf.isSplitTable())
         Integer row = (Integer) this.sqlMapClientTemplate.delete("$!{tbb.className}.deleteByKey", params);
         return row;
     }
@@ -147,9 +130,9 @@ public class $!{tbb.className}DAO {
      * @return
      * @throws SQLException
      */
-    public Integer deleteByKeys(#primaryKeys($tbb)#tableType($conf.isSplitTable())) throws SQLException {
+    public Integer deleteByKeys(#primaryKeys($tbb)) throws SQLException {
         #primaryKeysBody($tbb)
-        #tableBody($conf.isSplitTable())
+       
         Integer row = (Integer) this.sqlMapClientTemplate.delete("$!{tbb.className}.deleteByKeys", params);
         return row;
     }
@@ -204,9 +187,8 @@ public class $!{tbb.className}DAO {
 #if($conf.selectMap.size()>0)
     #foreach($sel in $conf.selectMap.keySet())
         #if( $conf.selectMap.get($sel) && $conf.selectMap.get($sel).size()>0)${clear}
-            public #if($sel.indexOf("List")>=0)List<$!{tbb.className}${PO}>#{else}$!{tbb.className}${PO}#end ${sel}(#foreach($w in $conf.selectMap.get($sel))#{if}($!{tbb.colMap.get($w)})#{if}($!{velocityCount}>1),#{end}$!{tbb.colMap.get($w).propertyType} $!{tbb.colMap.get($w).propertyName}#{end}#{end}#tableType($conf.isSplitTable())) throws SQLException{
+            public #if($sel.indexOf("List")>=0)List<$!{tbb.className}${PO}>#{else}$!{tbb.className}${PO}#end ${sel}(#foreach($w in $conf.selectMap.get($sel))#{if}($!{tbb.colMap.get($w)})#{if}($!{velocityCount}>1),#{end}$!{tbb.colMap.get($w).propertyType} $!{tbb.colMap.get($w).propertyName}#{end}#{end}) throws SQLException{
             Map<String, Object> params = new HashMap<String, Object>();
-            #tableBody($conf.isSplitTable())
             #foreach($w in $conf.selectMap.get($sel))#if($!{tbb.colMap.get($w)})
                 params.put("$!{tbb.colMap.get($w).propertyName}", $!{tbb.colMap.get($w).propertyName});
             #end
