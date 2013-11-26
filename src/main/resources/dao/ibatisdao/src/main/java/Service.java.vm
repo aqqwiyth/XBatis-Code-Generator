@@ -25,7 +25,9 @@
 #if($isSplitTable), String tableId#end
 #end
 #macro( tableValue $isSplitTable )
-    #if($isSplitTable), tableId#end
+    #if($isSplitTable)
+        #if($isSplitTable), tableId#end
+    #end
 #end
 
 #set($conf=$!{tbb.conf})
