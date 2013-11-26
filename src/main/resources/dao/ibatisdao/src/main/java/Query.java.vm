@@ -11,10 +11,26 @@
 ##$!{cb.colComment}字段注释，如：姓名全称
 ##$!{cb.colName}字段列名，如：full_name
 #set($conf=$!{tbb.conf})
+#set($bigDecimal=false)
+#set($Date=false)
 package $!{gb.packageName}.query;
 
+#foreach($cb in $tbb.colList)
+    #if($!{cb.propertyType}=="Clob"&&!$clob)
+    import java.sql.Clob;
+        #set($clob=true)
+    #elseif($!{cb.propertyType}=="Blob"&&!$blob)
+    import java.sql.Blob;
+        #set($blob=true)
+    #elseif($!{cb.propertyType}=="Date"&&$!Date)
+    import java.util.Date;
+        #set($Date=true)
+    #elseif($!{cb.propertyType}=="BigDecimal"&&!$bigDecimal)
+    import java.math.BigDecimal;
+        #set($bigDecimal=true)
+    #end
+#end
 import java.util.*;
-
 /**
  *
  * @author $!{gb.userName}
@@ -117,6 +133,21 @@ public class $!{tbb.className}Query extends BaseQuery {
 	}
 #end
 #end
+#if($conf.isSplitTable())
+    /**
+    * 分表使用
+    */
+    private String tableId;
+
+    public String getTableId() {
+        return tableId;
+    }
+
+    public $!{tbb.className}Query setTableId(String tableId) {
+        this.tableId = tableId;
+        return this;
+    }
+#end
 #if($conf.isCustomField())
     private String fields;
     /**
@@ -137,7 +168,7 @@ public class $!{tbb.className}Query extends BaseQuery {
     public String getFields(){
         return this.fields;
     }
-    public void  setFields(String fields){
+    public $!{tbb.className}Query  setFields(String fields){
         String[] array = fields.split(",");
         StringBuffer buffer = new StringBuffer();
         for (String field : array){
@@ -153,6 +184,7 @@ public class $!{tbb.className}Query extends BaseQuery {
         }else{
             this.fields = " 1 ";//没有一个参数可能会报错
         }
+        return this;
     }
 #end
 }
