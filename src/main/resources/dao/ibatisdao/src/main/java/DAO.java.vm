@@ -49,7 +49,9 @@
     #if($isSplitTable), tableId#end
 #end
 #macro( tableBody $isSplitTable)
+    #if($isSplitTable)
         params.put("tableId", tableId);
+    #end
 #end
 #set($conf=$!{tbb.conf})
 #set($PO = $!{gb.objSuffix})
