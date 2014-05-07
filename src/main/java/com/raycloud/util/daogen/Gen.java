@@ -40,15 +40,67 @@ public class Gen {
      * 对于dao的生成，暂时特殊定制，硬编码。key 为数据库表名，暂不全量配置
      */
     static {
-        tconfig.put("shop", TableConfig.build("shop"));
-        /**新增分表模式、符合主键、自定义add_time、upd_time、去除数据库前缀**/
-        tconfig.put("tb_trade", TableConfig.build("tb_trade").setCustomField(false));
-        //.setSplitTable(true).addQueryMethodAndCol("getTradeListByShopId", new String[] { "shop_id","buyer_nick" })
-        //.addQueryMethodAndCol("getTradeByShopId", new String[] { "shop_id" }));;
-        tconfig.put("tb_order", TableConfig.build("tb_order"));
-        tconfig.put("tb_trade_rate", TableConfig.build("tb_trade_rate"));
+//                tconfig.put("jdp_tb_refund", TableConfig.build("jdp_tb_refund"));
+//                tconfig.put("jdp_tb_trade", TableConfig.build("jdp_tb_trade"));
+//        tconfig.put("tb_trade", TableConfig.build("tb_trade"));
+//        tconfig.put("tb_order", TableConfig.build("tb_order"));
+//        tconfig.put("tb_trade_rate", TableConfig.build("tb_trade_rate"));
+//        tconfig.put("tb_trade_refund", TableConfig.build("tb_trade_refund"));
+//        tconfig.put("tb_promotion", TableConfig.build("tb_promotion"));
 
-        tconfig.put("tb_trade_refund", TableConfig.build("tb_trade_refund"));
+//        tconfig.put("assign_info", TableConfig.build("assign_info"));
+//        tconfig.put("system_user", TableConfig.build("system_user"));
+//        tconfig.put("tag", TableConfig.build("tag"));
+//        tconfig.put("tag_detail", TableConfig.build("tag_detail"));
+//        tconfig.put("user", TableConfig.build("user"));
+//        tconfig.put("tb_order", TableConfig.build("tb_order"));
+//        tconfig.put("promotion", TableConfig.build("promotion"));
+                tconfig.put("send_message", TableConfig.build("send_message"));
+
+//        tconfig.put("slow_request", TableConfig.build("slow_request"));
+//        tconfig.put("time_info", TableConfig.build("time_info"));
+
+//        tconfig.put("monitor_item", TableConfig.build("monitor_item"));
+
+//        tconfig.put("account", TableConfig.build("account"));
+//        tconfig.put("account_order", TableConfig.build("account_order"));
+//
+//        tconfig.put("fetch_config", TableConfig.build("fetch_config"));
+//        tconfig.put("slave_setting", TableConfig.build("slave_setting"));
+//
+//        tconfig.put("search_keyword_result", TableConfig.build("search_keyword_result").setSplitTable(true));
+//        tconfig.put("top_category_result", TableConfig.build("top_category_result").setSplitTable(true));
+
+//        tconfig.put("category_keywd", TableConfig.build("category_keywd").setSplitTable(true));
+
+//          tconfig.put("search_keyword_result", TableConfig.build("search_keyword_result"));
+//          tconfig.put("top_category_result", TableConfig.build("top_category_result"));
+//          tconfig.put("account_order", TableConfig.build("account_order"));
+//            tconfig.put("fetch_config", TableConfig.build("fetch_config"));
+
+//            tconfig.put("user", TableConfig.build("user"));
+
+
+
+//          tconfig.put("system_info", TableConfig.build("system_info"));
+//        tconfig.put("performance", TableConfig.build("performance"));
+
+
+//        tconfig.put("tb_order", TableConfig.build("tb_order").setSplitTable(true));
+//        tconfig.put("tb_refund", TableConfig.build("tb_refund").setSplitTable(true));
+//        tconfig.put("tb_trade", TableConfig.build("tb_trade").setSplitTable(true));
+//        tconfig.put("tao_user_dianzhang", TableConfig.build("tao_user_dianzhang"));
+
+//
+//        tconfig.put("tb_refund_json", TableConfig.build("tb_refund_json").setSplitTable(true));
+//        tconfig.put("tb_trade_json", TableConfig.build("tb_trade_json").setSplitTable(true));
+
+//        tconfig.put("ad", TableConfig.build("ad"));
+//        tconfig.put("ad_position", TableConfig.build("ad_position"));
+//        tconfig.put("user", TableConfig.build("user"));
+
+//        tconfig.put("user_cid", TableConfig.build("user_cid"));
+
 //        tconfig.put("erp_user", TableConfig.build("erp_user").setTablePrefix("erp_").addQueryMethodAndCol("getUserByVisitorId", new String[] { "visitor_id" })
 //                                                             .addQueryMethodAndCol("getUserByUserId", new String[]{"user_id"})
 //                                                             .addQueryMethodAndCol("getUserByNickName", new String[]{"name"})
@@ -172,12 +224,10 @@ public class Gen {
     private TableBean doGenTable(String tablename) {
         TableConfig conf = Gen.tconfig.get(tablename);
         TableBean tableBean = genTable.prepareTableBean(tablename, conf);
-//        tableBean.setConf(conf == null ? TableConfig.DEFAULT : conf);
         if (conf.isSplitTable()) {
             // 添加分表的参数
-            tableBean.setTableName(tableBean.getTableName().concat("_$tableId$"));
+            tableBean.setTableName(tableBean.getTableName().concat("_$splitTableName$"));
         }
-
         VelocityContext ctx = new VelocityContext();
         ctx.put("tbb", tableBean); // 设置表对象
         ctx.put("gb", globalBean); // 设置全局信息
