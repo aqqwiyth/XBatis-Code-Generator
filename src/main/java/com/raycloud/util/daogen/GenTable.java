@@ -191,6 +191,7 @@ public class GenTable {
                  Set<String> set =new LinkedHashSet<String>();
                 while (rs.next()) {
                     set.add(rs.getString("COLUMN_NAME"));
+                    break;
                 }
                 map.put(t.toLowerCase(), set);
             }

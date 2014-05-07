@@ -142,6 +142,18 @@ public class $!{tbb.className}ServiceImpl implements $!{tbb.className}Service{
         }
         return -1;
     }
+
+    /**
+     * 根据加入时间批量删除
+     */
+    public Integer deleteByAddTime($!{tbb.className}Query $!{tbb.objectName}Query){
+        try{
+            return $!{tbb.objectName}DAO.deleteByAddTime($!{tbb.objectName}Query);
+        }catch(SQLException e){
+            log.error("dao deleteByAddTime error. $!{tbb.pkcol.propertyName}s:" + e.getMessage(), e);
+        }
+        return -1;
+    }
 #end
 #if($conf.isUpdateKey())
     /**

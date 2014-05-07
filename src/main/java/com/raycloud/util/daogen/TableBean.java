@@ -159,6 +159,6 @@ public class TableBean {
     }
 
     public String getPureTableName() {
-        return tableName.replace("_$tableId$", "");
+        return tableName.replace("_$splitTableName$", "");
     }
 }

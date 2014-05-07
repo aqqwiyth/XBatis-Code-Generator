@@ -38,7 +38,8 @@ import java.io.Serializable;
  * @author  $!{gb.userName}
  * @date    $!{gb.nowDate}
  */
-public class $!{tbb.className}${PO} implements Serializable{
+public class $!{tbb.className}${PO}  extends BasePojo {
+
 
     /**
 	 *序列化ID
@@ -53,7 +54,7 @@ public class $!{tbb.className}${PO} implements Serializable{
 #end
 
 #foreach($cb in $tbb.colList)
-	
+
    /**
     * @return $!{cb.propertyName} $!{cb.colComment}
     */
@@ -73,11 +74,11 @@ public class $!{tbb.className}${PO} implements Serializable{
      * 需要更新时的代码，keys 代表主键list
      */
 	private List<Long> keys;
-		
+
 	public List<Long> getKeys() {
 		return keys;
 	}
-	
+
 	public void setIds(List<Long> keys) {
 		this.keys = keys;
 	}

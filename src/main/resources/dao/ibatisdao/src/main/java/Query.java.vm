@@ -49,7 +49,7 @@ public class $!{tbb.className}Query extends BaseQuery {
     	this.$!{cb.propertyName} = $!{cb.propertyName};
     	return this;
     }
-#elseif(${cb.colName}!=${conf.addField} && ${cb.colName}!=${conf.updField})
+#else ##if(${cb.colName}!=${conf.addField} && ${cb.colName}!=${conf.updField})
     /** $!{cb.colComment} **/
     private $!{cb.propertyType} $!{cb.propertyName}Start;
     public $!{cb.propertyType} get$!{cb.methodName}Start () {
@@ -110,29 +110,46 @@ public class $!{tbb.className}Query extends BaseQuery {
 #if($conf.orderCol.size()>0)
 #foreach($col in $conf.orderCol)
 	#if($tbb.colMap.get($col))
-	#set($cb = $tbb.colMap.get($col))	
+	#set($cb = $tbb.colMap.get($col))
 	/**
 	 * 设置排序按属性：$!{cb.colComment}
 	 * @param isAsc 是否升序，否则为降序
-	 */	
+	 */
 	public $!{tbb.className}Query orderby$!{cb.methodName}(boolean isAsc){
 		orderFields.add(new OrderField("$!{cb.colName}",isAsc?"ASC":"DESC"));
 		return this;
 	}
-	#end	
+	#end
 #end
 #else
 #foreach($cb in $tbb.colList)
 	/**
 	 * 设置排序按属性：$!{cb.colComment}
 	 * @param isAsc 是否升序，否则为降序
-	 */	
+	 */
 	public $!{tbb.className}Query orderby$!{cb.methodName}(boolean isAsc){
 		orderFields.add(new OrderField("$!{cb.colName}",isAsc?"ASC":"DESC"));
 		return this;
 	}
 #end
 #end
+  #foreach($pkcol in $tbb.pkcol)
+#if($foreach.last)
+#set($lastPkcol=$pkcol)
+#end
+#end
+    private List<$lastPkcol.propertyType> keys;
+
+    public List<$lastPkcol.propertyType> getKeys() {
+        return keys;
+    }
+
+    public $!{tbb.className}Query setKeys(List<$lastPkcol.propertyType> keys) {
+        this.keys = keys;
+        return this;
+    }
+
+
 #if($conf.isSplitTable())
     /**
     * 分表使用

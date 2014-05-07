@@ -44,10 +44,11 @@
 #set($clear = "")
 package $!{gb.packageName}.dao;
 
-import com.ibatis.sqlmap.client.SqlMapClient;
+import com.raycloud.dao.MysdalBaseDao;
+##import com.ibatis.sqlmap.client.SqlMapClient;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.Resource;
+##import javax.annotation.Resource;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
@@ -81,13 +82,13 @@ import $!{gb.packageName}.pojo.$!{tbb.className}${PO};
  */
 
 @Repository
-public class $!{tbb.className}DAO {
+public class $!{tbb.className}DAO  extends MysdalBaseDao{
 
-	@Resource
-	SqlMapClient sqlMapClientTemplate;
+##	@Resource
+##	SqlMapClient sqlMapClientTemplate;
 
 	public Integer add$!{tbb.className}${PO}($!{tbb.className}${PO} $!{tbb.objectName}) throws SQLException{
-		return (Integer)this.sqlMapClientTemplate.insert("${tbb.className}.insert${tbb.className}${PO}", $!{tbb.objectName});
+		return (Integer) getSqlMapClientTemplate().insert("${tbb.className}.insert${tbb.className}${PO}", $!{tbb.objectName});
 	}
 
 #if($conf.isGetByKey())
@@ -97,7 +98,7 @@ public class $!{tbb.className}DAO {
     */
     public $!{tbb.className}${PO} get$!{tbb.className}${PO}ByKey(#primaryKey()) throws SQLException {
         #primaryKeyBody()
-        $!{tbb.className}$PO result = ($!{tbb.className}$PO) this.sqlMapClientTemplate.queryForObject(
+        $!{tbb.className}$PO result = ($!{tbb.className}$PO)  getSqlMapClientTemplate().queryForObject(
                 "$!{tbb.className}.get$!{tbb.className}${PO}ByKey", params);
         return result;
     }
@@ -109,7 +110,7 @@ public class $!{tbb.className}DAO {
      */
     public  List<$!{tbb.className}${PO}> get$!{tbb.className}${PO}ByKeys(#primaryKeys()) throws SQLException {
         #primaryKeysBody()
-        return  (List<$!{tbb.className}${PO}>)this.sqlMapClientTemplate.queryForList("$!{tbb.className}.get$!{tbb.className}${PO}sByKeys", params);
+        return  (List<$!{tbb.className}${PO}>) getSqlMapClientTemplate().queryForList("$!{tbb.className}.get$!{tbb.className}${PO}sByKeys", params);
     }
 #end
 #if($conf.isDelByKey())
@@ -118,9 +119,9 @@ public class $!{tbb.className}DAO {
      * @return
      * @throws SQLException
      */
-    public Integer deleteByKey(#primaryKey($tbb)) throws SQLException {
+    public Integer deleteByKey(#primaryKey()) throws SQLException {
         #primaryKeyBody($tbb)
-        Integer row = (Integer) this.sqlMapClientTemplate.delete("$!{tbb.className}.deleteByKey", params);
+        Integer row =  getSqlMapClientTemplate().delete("$!{tbb.className}.deleteByKey", params);
         return row;
     }
 #end
@@ -130,12 +131,22 @@ public class $!{tbb.className}DAO {
      * @return
      * @throws SQLException
      */
-    public Integer deleteByKeys(#primaryKeys($tbb)) throws SQLException {
+    public Integer deleteByKeys(#primaryKeys()) throws SQLException {
         #primaryKeysBody($tbb)
-       
-        Integer row = (Integer) this.sqlMapClientTemplate.delete("$!{tbb.className}.deleteByKeys", params);
+
+        Integer row =  getSqlMapClientTemplate().delete("$!{tbb.className}.deleteByKeys", params);
         return row;
     }
+    /**
+     * 根据加入时间批量删除
+     * @return
+     * @throws SQLException
+     */
+    public Integer deleteByAddTime($!{tbb.className}Query $!{tbb.objectName}Query) throws SQLException {
+        Integer row =  getSqlMapClientTemplate().delete("$!{tbb.className}.deleteByAddTime", $!{tbb.objectName}Query);
+        return row;
+    }
+
 #end
 #if($conf.isUpdateKey())
     /**
@@ -144,7 +155,7 @@ public class $!{tbb.className}DAO {
      * @throws SQLException
      */
     public Integer update$!{tbb.className}${PO}ByKey($!{tbb.className}${PO} $!{tbb.objectName}) throws SQLException{
-		return (Integer) this.sqlMapClientTemplate.update("${tbb.className}.update${tbb.className}${PO}ByKey", $!{tbb.objectName});
+		return  getSqlMapClientTemplate().update("${tbb.className}.update${tbb.className}${PO}ByKey", $!{tbb.objectName});
 	}
 #end
 ##分页
@@ -152,23 +163,23 @@ public class $!{tbb.className}DAO {
     @SuppressWarnings("unchecked")
     public Result<$!{tbb.className}${PO}> get$!{tbb.className}${PO}ListWithPage($!{tbb.className}Query $!{tbb.objectName}Query){
 	    Result<$!{tbb.className}${PO}> rs = new Result<$!{tbb.className}${PO}>();
-		try{
+		##try{
 #if($conf.isCustomField())
-            rs.setCount((Integer) this.sqlMapClientTemplate.queryForObject("$!{tbb.className}.get$!{tbb.className}ListCount",$!{tbb.objectName}Query));
-            if($!{tbb.objectName}Query.getFields()!=null||$!{tbb.objectName}Query.getFields()!=""){
-                rs.setList((List<$!{tbb.className}${PO}>)this.sqlMapClientTemplate.queryForList("$!{tbb.className}.get$!{tbb.className}ListWithPageFields", $!{tbb.objectName}Query));
+            rs.setCount((Integer)  getSqlMapClientTemplate().queryForObject("$!{tbb.className}.get$!{tbb.className}ListCount",$!{tbb.objectName}Query));
+            if($!{tbb.objectName}Query.getFields()!=null && $!{tbb.objectName}Query.getFields()!=""){
+                rs.setList((List<$!{tbb.className}${PO}>) getSqlMapClientTemplate().queryForList("$!{tbb.className}.get$!{tbb.className}ListWithPageFields", $!{tbb.objectName}Query));
             }else{
-                rs.setList((List<$!{tbb.className}${PO}>)this.sqlMapClientTemplate.queryForList("$!{tbb.className}.get$!{tbb.className}ListWithPage", $!{tbb.objectName}Query));
+                rs.setList((List<$!{tbb.className}${PO}>) getSqlMapClientTemplate().queryForList("$!{tbb.className}.get$!{tbb.className}ListWithPage", $!{tbb.objectName}Query));
             }
 #else
-            rs.setList((List<$!{tbb.className}${PO}>)this.sqlMapClientTemplate.queryForList("$!{tbb.className}.get$!{tbb.className}ListWithPage", $!{tbb.objectName}Query));
+            rs.setList((List<$!{tbb.className}${PO}>) getSqlMapClientTemplate().queryForList("$!{tbb.className}.get$!{tbb.className}ListWithPage", $!{tbb.objectName}Query));
 #end
-		}catch(SQLException e){
-			rs.setSuccess(false);
-			rs.setCount(0);
-			rs.setList(Collections.EMPTY_LIST);
-			rs.setErrorMsg(e.toString());
-		}
+##		}catch(SQLException e){
+##			rs.setSuccess(false);
+##			rs.setCount(0);
+##			rs.setList(Collections.EMPTY_LIST);
+##			rs.setErrorMsg(e.toString());
+##		}
 		return rs;
 	}
 #end
@@ -176,11 +187,11 @@ public class $!{tbb.className}DAO {
     @SuppressWarnings("unchecked")
     public List<$!{tbb.className}${PO}> get$!{tbb.className}${PO}List($!{tbb.className}Query $!{tbb.objectName}Query) throws SQLException{
 #if($conf.isCustomField())
-    if($!{tbb.objectName}Query.getFields()!=null||$!{tbb.objectName}Query.getFields()!=""){
-        return (List<$!{tbb.className}${PO}>)this.sqlMapClientTemplate.queryForList("$!{tbb.className}.get$!{tbb.className}ListFields", $!{tbb.objectName}Query);
+    if($!{tbb.objectName}Query.getFields()!=null&&$!{tbb.objectName}Query.getFields()!=""){
+        return (List<$!{tbb.className}${PO}>) getSqlMapClientTemplate().queryForList("$!{tbb.className}.get$!{tbb.className}ListFields", $!{tbb.objectName}Query);
     }
 #end
-		return (List<$!{tbb.className}${PO}>)this.sqlMapClientTemplate.queryForList("$!{tbb.className}.get$!{tbb.className}List", $!{tbb.objectName}Query);
+		return (List<$!{tbb.className}${PO}>) getSqlMapClientTemplate().queryForList("$!{tbb.className}.get$!{tbb.className}List", $!{tbb.objectName}Query);
 	}
 
 ##自定义查询
@@ -193,9 +204,9 @@ public class $!{tbb.className}DAO {
                 params.put("$!{tbb.colMap.get($w).propertyName}", $!{tbb.colMap.get($w).propertyName});
             #end
             #end
-                #if($sel.indexOf("List")>=0)List<$!{tbb.className}${PO}> result = (List<$!{tbb.className}${PO}>) this.sqlMapClientTemplate.queryForList(
+                #if($sel.indexOf("List")>=0)List<$!{tbb.className}${PO}> result = (List<$!{tbb.className}${PO}>)  getSqlMapClientTemplate().queryForList(
                         "$!{tbb.className}.${sel}", params);
-            #else$!{tbb.className}${PO} result = ($!{tbb.className}${PO}) this.sqlMapClientTemplate.queryForObject("$!{tbb.className}.${sel}", params);
+            #else$!{tbb.className}${PO} result = ($!{tbb.className}${PO})  getSqlMapClientTemplate().queryForObject("$!{tbb.className}.${sel}", params);
             #end
             return result;
         }

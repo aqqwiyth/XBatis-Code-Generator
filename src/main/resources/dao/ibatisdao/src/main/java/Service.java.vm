@@ -56,13 +56,18 @@ public interface $!{tbb.className}Service{
     /**
      * 根据主键查询
      */
-	public $!{tbb.className}${PO} get$!{tbb.className}${PO}ByKey(#primaryKey($tbb));
+	public $!{tbb.className}${PO} get$!{tbb.className}${PO}ByKey(#primaryKey());
 #end
 #if($conf.isGetByKeys())
     /**
      * 根据主键批量查询
      */
-    public List<$!{tbb.className}${PO}> get$!{tbb.className}${PO}ByKeys(#primaryKeys($tbb));
+    public List<$!{tbb.className}${PO}> get$!{tbb.className}${PO}ByKeys(#primaryKeys());
+
+    /**
+     * 根据加入时间批量删除
+     */
+    public Integer deleteByAddTime($!{tbb.className}Query $!{tbb.objectName}Query);
 #end
 
 
@@ -71,14 +76,14 @@ public interface $!{tbb.className}Service{
      * 根据主键删除
      * @return
      */
-	public Integer deleteByKey(#primaryKey($tbb));
+	public Integer deleteByKey(#primaryKey());
 #end
 #if($conf.isDelByKeys())
     /**
      * 根据主键批量删除
      * @return
      */
-    public Integer deleteByKeys(#primaryKeys($tbb));
+    public Integer deleteByKeys(#primaryKeys());
 #end
 
 #if($conf.isUpdateKey())

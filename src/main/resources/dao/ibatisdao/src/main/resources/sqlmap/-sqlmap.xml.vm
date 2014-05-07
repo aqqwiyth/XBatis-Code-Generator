@@ -72,6 +72,11 @@
 #end
         FROM ${tbb.tableName}
     </sql>
+#foreach($pkcol in $tbb.pkcol)
+#if($foreach.last)
+#set($lastPkcol=$pkcol)
+#end
+#end
     <sql id="${tbb.objectName}${PO}List.where">
         <dynamic prepend=" WHERE ">
     #foreach($cb in $tbb.colList)
@@ -79,6 +84,14 @@
         <isNotNull property="$!cb.propertyName" prepend=" AND ">
             $!{cb.colNameCheck}=#$!{cb.propertyName}#
         </isNotNull>
+        #if(${cb.propertyName}==${lastPkcol.propertyName})
+            <isNotNull property="keys" prepend=" AND ">
+                $!{cb.colNameCheck} in
+                <iterate conjunction="," open="(" close=")" property="keys">
+                    #keys[]#
+                </iterate>
+            </isNotNull>
+        #end
         #elseif(${cb.colName}!=${conf.addField} && ${cb.colName}!=${conf.updField})
             <isNotNull property="$!{cb.propertyName}Start" prepend=" AND ">
                 <![CDATA[  $!{cb.colNameCheck} >= #$!{cb.propertyName}Start# ]]>
@@ -151,13 +164,13 @@
         <!-- 根据主键更新 -->
         ##假设没有数据变化则不会产生io操作
         ##去除更新时间插入时间的字段,有数据变更，时间修改交给数据库执行
-        <update id="${tbb.className}.update${tbb.className}${PO}ByKey" parameterClass="${tbb.className}">
+        <update id="update${tbb.className}${PO}ByKey" parameterClass="${tbb.className}">
             UPDATE ${tbb.tableName}
             <dynamic prepend="SET" >
                 #foreach($cb in $tbb.colList)
                 #if(${cb.colName}!=${conf.addField} && ${cb.colName}!=${conf.updField})
                     <isNotNull prepend="," property="$!{cb.propertyName}">
-                        #if($conf.isSubString() && $cb.propertyType =="String")
+                        #if($conf.isSubString() && $cb.propertyType =="String" && $!{cb.precision} > 32)
                         ##这里只对String类型与mysql作了一个示例，其他请自行修改
                             $cb.colNameCheck =  substring(#$!{cb.propertyName.trim()}#,1,$!{cb.precision})
                         #else
@@ -172,17 +185,17 @@
         </update>
     #end
     <!-- 分页 -->
-    <select id="${tbb.className}.get${tbb.className}ListWithPage" parameterClass="${tbb.className}Query" resultMap="${tbb.objectName}">
+    <select id="get${tbb.className}ListWithPage" parameterClass="${tbb.className}Query" resultMap="${tbb.objectName}">
         <include refid="${tbb.objectName}${PO}.selector"/>
         <include refid="${tbb.objectName}${PO}List.where"/>
         <include refid="${tbb.objectName}${PO}List.order"/>
         <include refid="${tbb.objectName}${PO}List.limit"/>
     </select>
-    <select id="${tbb.className}.get${tbb.className}ListCount" parameterClass="${tbb.className}Query" resultClass="int">
+    <select id="get${tbb.className}ListCount" parameterClass="${tbb.className}Query" resultClass="int">
         SELECT count(1) FROM ${tbb.tableName}
         <include refid="${tbb.objectName}${PO}List.where"/>
     </select>
-    <select id="${tbb.className}.get${tbb.className}List" parameterClass="${tbb.className}Query" resultMap="${tbb.objectName}">
+    <select id="get${tbb.className}List" parameterClass="${tbb.className}Query" resultMap="${tbb.objectName}">
         <include refid="${tbb.objectName}${PO}.selector"/>
         <include refid="${tbb.objectName}${PO}List.where"/>
         <include refid="${tbb.objectName}${PO}List.order"/>
@@ -190,33 +203,30 @@
 
 #if($conf.isCustomField())
     <!-- 如果使用自定义字段查询,则要使用resultClass否则会出现异常-->
-    <select id="${tbb.className}.get${tbb.className}ListWithPageFields" parameterClass="${tbb.className}Query" resultClass="${tbb.className}">
+    <select id="get${tbb.className}ListWithPageFields" parameterClass="${tbb.className}Query" resultClass="${tbb.className}">
         <include refid="${tbb.objectName}${PO}.selector"/>
         <include refid="${tbb.objectName}${PO}List.where"/>
         <include refid="${tbb.objectName}${PO}List.order"/>
         <include refid="${tbb.objectName}${PO}List.limit"/>
     </select>
-    <select id="${tbb.className}.get${tbb.className}ListFields" parameterClass="${tbb.className}Query" resultClass="${tbb.className}">
+    <select id="get${tbb.className}ListFields" parameterClass="${tbb.className}Query" resultClass="${tbb.className}">
         <include refid="${tbb.objectName}${PO}.selector"/>
         <include refid="${tbb.objectName}${PO}List.where"/>
         <include refid="${tbb.objectName}${PO}List.order"/>
     </select>
 #end
-    <!--##add代码
-    <insert id="${tbb.className}.insert${tbb.className}${PO}" parameterClass="${tbb.className}">
-    INSERT INTO ${tbb.tableName}(
-    #foreach($cb in $tbb.colList)
-       $!{cb.colNameCheck} #if(!$foreach.last),#end
-    #end
-    VALUES(
-    #foreach($cb in $tbb.colList)
-        #$!{cb.propertyName}# #if(!$foreach.last),#end
-    #end
-    )
-    </insert>
-    -->
+##    ##add代码
+##    <insert id="replace${tbb.className}${PO}" parameterClass="${tbb.className}">
+##    replace INTO ${tbb.tableName}(
+##            #foreach($cb in $tbb.colList)$!{cb.colNameCheck.trim()}  #if($foreach.hasNext), #end #end
+##    )VALUES(
+##            #foreach($cb in $tbb.colList)
+##                #if($!{cb.colName}==${conf.addField} ||$!{cb.colName}==${conf.updField})now(), #else #if($conf.isSubString() && $cb.propertyType =="String" && $!{cb.precision} > 32 )substring(#$!{cb.propertyName.trim()}#,1,$!{cb.precision})  #else#$!{cb.propertyName.trim()}# #end #if($foreach.hasNext), #end  #end
+##            #end
+##    )
+##    </insert>
     ##add代码
-    <insert id="${tbb.className}.insert${tbb.className}${PO}" parameterClass="${tbb.className}">
+    <insert id="insert${tbb.className}${PO}" parameterClass="${tbb.className}">
         INSERT INTO ${tbb.tableName}
         <dynamic prepend="(" close=")">
             ##循环所有字段
@@ -237,7 +247,7 @@
                             ,now()
                 #else
                     <isNotEmpty  prepend="," property="$!{cb.propertyName}">
-                        #if($conf.isSubString() && $cb.propertyType =="String")
+                        #if($conf.isSubString() && $cb.propertyType =="String" && $!{cb.precision} > 32)
                             ##这里只对String类型与mysql作了一个示例，其他请自行修改
                             substring(#$!{cb.propertyName.trim()}#,1,$!{cb.precision})
                         #else

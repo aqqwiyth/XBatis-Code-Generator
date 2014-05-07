@@ -188,6 +188,10 @@ public class TableConfig {
         return this;
     }
 
+    public Boolean getSplitTable() {
+        return splitTable;
+    }
+
     public TableConfig setPrimaryKey(String key) {
         this.primaryKey = key;
         return this;
