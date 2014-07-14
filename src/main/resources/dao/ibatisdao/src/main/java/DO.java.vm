@@ -83,18 +83,18 @@ public class $!{tbb.className}${PO}  extends BasePojo {
 		this.keys = keys;
 	}
 #end
-#if($conf.isSplitTable())
-    /**
-    * 分表使用
-    */
-    private String tableId;
-
-    public String getTableId() {
-        return tableId;
-    }
-
-    public void setTableId(String tableId) {
-        this.tableId = tableId;
-    }
-#end
+###if($conf.isSplitTable())
+##    /**
+##    * 分表使用
+##    */
+##    private String tableId;
+##
+##    public String getTableId() {
+##        return tableId;
+##    }
+##
+##    public void setTableId(String tableId) {
+##        this.tableId = tableId;
+##    }
+###end
 }

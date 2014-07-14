@@ -202,14 +202,16 @@
     </select>
 
 #if($conf.isCustomField())
-    <!-- 如果使用自定义字段查询,则要使用resultClass否则会出现异常-->
-    <select id="get${tbb.className}ListWithPageFields" parameterClass="${tbb.className}Query" resultClass="${tbb.className}">
+<!-- 如果使用自定义字段查询,则要使用resultClass否则会出现异常
+注意：ibatis存在SQL缓存，所以自定义字段的时候需要开启 remapResults="true" 存在一定性能问题
+-->
+    <select id="get${tbb.className}ListWithPageFields" parameterClass="${tbb.className}Query" remapResults="true" resultClass="${tbb.className}">
         <include refid="${tbb.objectName}${PO}.selector"/>
         <include refid="${tbb.objectName}${PO}List.where"/>
         <include refid="${tbb.objectName}${PO}List.order"/>
         <include refid="${tbb.objectName}${PO}List.limit"/>
     </select>
-    <select id="get${tbb.className}ListFields" parameterClass="${tbb.className}Query" resultClass="${tbb.className}">
+    <select id="get${tbb.className}ListFields" parameterClass="${tbb.className}Query" remapResults="true" resultClass="${tbb.className}">
         <include refid="${tbb.objectName}${PO}.selector"/>
         <include refid="${tbb.objectName}${PO}List.where"/>
         <include refid="${tbb.objectName}${PO}List.order"/>

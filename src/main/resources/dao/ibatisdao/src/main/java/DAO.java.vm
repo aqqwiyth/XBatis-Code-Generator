@@ -44,7 +44,7 @@
 #set($clear = "")
 package $!{gb.packageName}.dao;
 
-import com.raycloud.dao.MysdalBaseDao;
+import com.alibaba.cobarclient.dao.MysdalBaseDao;
 ##import com.ibatis.sqlmap.client.SqlMapClient;
 import org.springframework.stereotype.Repository;
 
